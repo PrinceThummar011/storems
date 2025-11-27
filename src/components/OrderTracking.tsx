@@ -5,28 +5,28 @@ export default function OrderTracking() {
   const [orderId, setOrderId] = useState('');
   const [searchedOrder, setSearchedOrder] = useState<any>(null);
   const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const mockOrders: Record<string, any> = {
-    'ORD-20250103-1234': {
-      orderId: 'ORD-20250103-1234',
-      status: 'ready',
-      customerName: 'John Doe',
-      orderDate: '2025-10-03 14:30',
-      items: ['Premium Gel Pen Set', 'A4 Spiral Notebook'],
-      printOrders: 1,
-      total: 580
-    }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const order = mockOrders[orderId.toUpperCase()];
-    if (order) {
-      setSearchedOrder(order);
-      setNotFound(false);
-    } else {
-      setSearchedOrder(null);
+    setLoading(true);
+    setNotFound(false);
+    setSearchedOrder(null);
+
+    try {
+      const trimmedId = orderId.trim();
+      const response = await fetch(`http://localhost:3001/api/orders/${trimmedId.toUpperCase()}`);
+      if (response.ok) {
+        const order = await response.json();
+        setSearchedOrder(order);
+      } else {
+        setNotFound(true);
+      }
+    } catch (err) {
+      console.error('Error fetching order:', err);
       setNotFound(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,9 +72,15 @@ export default function OrderTracking() {
         </form>
 
         <p className="text-sm text-gray-500 mt-3">
-          Try: ORD-20250103-1234 for demo
+          Enter your order ID to track your order
         </p>
       </div>
+
+      {loading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+          <p className="text-blue-800 font-medium">Searching for order...</p>
+        </div>
+      )}
 
       {notFound && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -89,7 +95,7 @@ export default function OrderTracking() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <h3 className="text-2xl font-bold mb-2">Order Details</h3>
-            <p className="text-blue-100">Order ID: {searchedOrder.orderId}</p>
+            <p className="text-blue-100">Order ID: {searchedOrder.id}</p>
           </div>
 
           <div className="p-6">
@@ -111,6 +117,11 @@ export default function OrderTracking() {
               })()}
             </div>
 
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-1">Order ID</p>
+              <p className="font-mono text-sm text-gray-900">{searchedOrder.id}</p>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Customer Name</p>
@@ -125,18 +136,24 @@ export default function OrderTracking() {
             <div className="border-t pt-4">
               <h4 className="font-semibold text-gray-900 mb-3">Order Items</h4>
               <ul className="space-y-2">
-                {searchedOrder.items.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center space-x-2 text-gray-700">
-                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-                {searchedOrder.printOrders > 0 && (
-                  <li className="flex items-center space-x-2 text-gray-700">
-                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                    <span>{searchedOrder.printOrders} Print Order(s)</span>
-                  </li>
-                )}
+                {Array.isArray(searchedOrder.items) &&
+                  searchedOrder.items.map((item: any, index: number) => (
+                    <li key={index} className="flex items-center space-x-2 text-gray-700">
+                      <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                      <span>
+                        {item.product
+                          ? `${item.quantity} x ${item.product.name}`
+                          : String(item)}
+                      </span>
+                    </li>
+                  ))}
+                {Array.isArray(searchedOrder.printOrders) &&
+                  searchedOrder.printOrders.length > 0 && (
+                    <li className="flex items-center space-x-2 text-gray-700">
+                      <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                      <span>{searchedOrder.printOrders.length} Print Order(s)</span>
+                    </li>
+                  )}
               </ul>
             </div>
 

@@ -13,7 +13,7 @@ export default function AuthModal({ onClose, onLogin }: AuthModalProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -32,9 +32,35 @@ export default function AuthModal({ onClose, onLogin }: AuthModalProps) {
       return;
     }
 
-    const userName = isLogin ? email.split('@')[0] : name;
-    onLogin(email, userName);
-    onClose();
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const body = isLogin
+        ? { email, password }
+        : { email, password, name };
+
+      const response = await fetch(`http://localhost:3001${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Authentication failed');
+        return;
+      }
+
+      // Store user data (in a real app, you'd use proper auth tokens)
+      localStorage.setItem('user', JSON.stringify(data));
+      onLogin(data.email, data.name);
+      onClose();
+    } catch (err) {
+      setError('Network error. Please try again.');
+      console.error('Auth error:', err);
+    }
   };
 
   return (

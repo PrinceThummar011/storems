@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { X, CreditCard, Smartphone, Wallet } from 'lucide-react';
 import { CartItem, PrintOrder } from '../types';
-import { generateOrderId } from '../utils/pricing';
 
 interface CheckoutProps {
   isOpen: boolean;
@@ -29,11 +28,44 @@ export default function Checkout({ isOpen, onClose, items, printOrders, onOrderC
     e.preventDefault();
     setIsProcessing(true);
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Get user data from localStorage if available
+      const userData = localStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
 
-    const orderId = generateOrderId();
-    onOrderComplete(orderId, customerInfo);
-    setIsProcessing(false);
+      const orderData = {
+        userId: user?.id || null,
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        customerPhone: customerInfo.phone,
+        items,
+        printOrders,
+        subtotal,
+        tax,
+        total
+      };
+
+      const response = await fetch('http://localhost:3001/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const order = await response.json();
+
+      if (!response.ok) {
+        throw new Error(order.message || 'Failed to create order');
+      }
+
+      onOrderComplete(order.id, customerInfo);
+    } catch (err) {
+      console.error('Order creation error:', err);
+      alert('Failed to create order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (!isOpen) return null;

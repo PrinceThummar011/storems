@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Product, CartItem } from '../types';
-import { PRODUCTS } from '../data/products';
 import ProductCard from './ProductCard';
 
 interface ShopSectionProps {
@@ -13,10 +12,38 @@ interface ShopSectionProps {
 export default function ShopSection({ cart, onAddToCart, onUpdateQuantity }: ShopSectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const categories = ['All', ...Array.from(new Set(PRODUCTS.map(p => p.category)))];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/products');
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredProducts = PRODUCTS.filter(product => {
+    fetchProducts();
+  }, []);
+
+  const visibleProducts = products.filter(p => {
+    const name = p.name.toLowerCase();
+    const category = p.category.toLowerCase();
+    return !name.includes('pasta') && !category.includes('pasta');
+  });
+
+  const categories = ['All', ...Array.from(new Set(visibleProducts.map(p => p.category)))];
+
+  const filteredProducts = visibleProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
@@ -26,6 +53,26 @@ export default function ShopSection({ cart, onAddToCart, onUpdateQuantity }: Sho
   const getProductQuantity = (productId: string) => {
     return cart.find(item => item.product.id === productId)?.quantity || 0;
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-300">Loading menu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center">
+          <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">

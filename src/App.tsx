@@ -24,7 +24,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -109,7 +109,7 @@ function App() {
         onLoginClick={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
         isDarkMode={isDarkMode}
-        onToggleTheme={handleToggleTheme}
+          onToggleTheme={handleToggleTheme}
         />
 
         <main className="flex-1">
