@@ -1,83 +1,80 @@
-### Installation & Setup
+# Burger Queen - Fast Food Ordering System
 
-Follow these steps to set up the development environment.
+A complete fast food ordering system with separate customer and admin interfaces.
 
-1. **Clone the repository**
+## Project Structure
 
-Replace `<repository-url>` with the actual URL of your Git repository.
-
-```sh
-git clone <repository-url>
-cd storems
+```
+storems/
+├── backend/          # Backend API server
+├── src/              # Customer frontend (React app)
+└── admin/            # Admin frontend (React app)
 ```
 
-2. **Install dependencies**
+## How to Run
 
-This command will install all the required npm packages for the frontend.
+### 1. Install Dependencies
 
-```sh
-npm install
-```
-
-3. **Set up the backend**
-
-Navigate to the backend directory and install dependencies.
-
-```sh
+**Install backend dependencies:**
+```bash
 cd backend
 npm install
 cd ..
 ```
 
-4. **Start the backend server**
-
-This will run the backend API server.
-
-```sh
-npm run dev-backend
+**Install customer frontend dependencies:**
+```bash
+npm install
 ```
 
-The backend will be available at `http://localhost:3001`.
+**Install admin frontend dependencies:**
+```bash
+cd admin
+npm install
+cd ..
+```
 
-5. **Start the frontend development server**
+### 2. Start the Backend Server
 
-In a separate terminal, run the frontend.
-
-```sh
+From the root directory (`storems/`):
+```bash
+cd backend
 npm run dev
 ```
 
-6. **Open your browser**
+The backend will run on `http://localhost:3001`
 
-Navigate to `http://localhost:5173` to view the application. The page will reload if you make edits.
+### 3. Start the Customer Frontend
 
-## Backend API
+Open a **new terminal** and from the root directory:
+```bash
+npm run dev
+```
 
-The application includes a complete backend API with the following features:
+The customer app will run on `http://localhost:5173`
 
-### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login with existing credentials
+### 4. Start the Admin Frontend
 
-### Products
-- `GET /api/products` - Get all products
-- `GET /api/products/:id` - Get a specific product by ID
+Open **another terminal** and:
+```bash
+cd admin
+npm run dev
+```
 
-### Orders
-- `POST /api/orders` - Create a new order
-- `GET /api/orders/:id` - Get order details by ID
-- `GET /api/orders/user/:userId` - Get all orders for a user
-- `PUT /api/orders/:id/status` - Update order status
+The admin app will run on `http://localhost:5174` (or next available port)
 
-### Features
-- User registration and authentication
-- Product catalog management
-- Order creation and tracking
-- Real-time order status updates
-- In-memory data storage (easily replaceable with a database)
+## Admin Login
 
-## Technology Stack
+- **Email:** `bqueen@gmail.com`
+- **Password:** `1234`
 
-- **Frontend**: React + TypeScript + Vite + Tailwind CSS
-- **Backend**: Node.js + Express + TypeScript
-- **Database**: In-memory storage (ready for database integration)
+## Features
+
+- **Customer Side:** Browse menu, add to cart, place orders, track order status
+- **Admin Side:** View all orders, mark orders as ready, add new menu items
+
+## Notes
+
+- Make sure the backend is running before starting the frontend apps
+- All three servers need to run simultaneously for the full system to work
+- Data is stored in-memory (will reset when backend restarts)
