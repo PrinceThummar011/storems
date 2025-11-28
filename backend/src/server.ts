@@ -214,6 +214,29 @@ app.get('/api/products', (req: Request, res: Response) => {
   res.json(products);
 });
 
+app.post('/api/products', (req: Request, res: Response) => {
+  const { name, description, price, image, stock, category } = req.body;
+
+  if (!name || !description || !price || !image || !stock || !category) {
+    return res.status(400).json({ message: 'All product fields are required' });
+  }
+
+  const newProduct: Product = {
+    id: `p${Date.now()}`,
+    name,
+    description,
+    price: Number(price),
+    image,
+    stock: Number(stock),
+    category
+  };
+
+  products.push(newProduct);
+  console.log('Product added:', newProduct.name);
+
+  res.status(201).json(newProduct);
+});
+
 app.get('/api/products/:id', (req: Request, res: Response) => {
   const id = req.params.id;
   const product = products.find(p => p.id === id);
@@ -225,6 +248,11 @@ app.get('/api/products/:id', (req: Request, res: Response) => {
 });
 
 // Order endpoints
+app.get('/api/orders', (req: Request, res: Response) => {
+  console.log('GET /api/orders - Returning all orders');
+  res.json(orders);
+});
+
 app.post('/api/orders', (req: Request, res: Response) => {
   const { userId, customerName, customerEmail, customerPhone, items, printOrders, subtotal, tax, total } = req.body;
 

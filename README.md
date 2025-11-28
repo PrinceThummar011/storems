@@ -1,83 +1,87 @@
-### Installation & Setup
+# StoreMS - Food Ordering & Print Services
 
-Follow these steps to set up the development environment.
+A modern web application for food ordering and print services with full-stack functionality.
 
-1. **Clone the repository**
+## 🚀 Quick Start
 
-Replace `<repository-url>` with the actual URL of your Git repository.
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
 
-```sh
+### Installation
+
+1. **Clone and install frontend dependencies**
+```bash
 git clone <repository-url>
 cd storems
-```
-
-2. **Install dependencies**
-
-This command will install all the required npm packages for the frontend.
-
-```sh
 npm install
 ```
 
-3. **Set up the backend**
-
-Navigate to the backend directory and install dependencies.
-
-```sh
+2. **Install backend dependencies**
+```bash
 cd backend
 npm install
 cd ..
 ```
 
-4. **Start the backend server**
+### Running the Application
 
-This will run the backend API server.
-
-```sh
+1. **Start the backend server** (Terminal 1)
+```bash
 npm run dev-backend
 ```
+Backend runs on: `http://localhost:3001`
 
-The backend will be available at `http://localhost:3001`.
-
-5. **Start the frontend development server**
-
-In a separate terminal, run the frontend.
-
-```sh
+2. **Start the customer frontend** (Terminal 2)
+```bash
 npm run dev
 ```
+Customer app runs on: `http://localhost:5173`
 
-6. **Open your browser**
+3. **Start the admin panel** (Terminal 3 - Optional)
+```bash
+npm run dev-admin
+```
+Admin panel runs on: `http://localhost:5174`
 
-Navigate to `http://localhost:5173` to view the application. The page will reload if you make edits.
+4. **Open your browser**
+- Customer app: `http://localhost:5173`
+- Admin panel: `http://localhost:5174`
 
-## Backend API
+## 👨‍💼 Admin Panel Features
 
-The application includes a complete backend API with the following features:
+### Admin Login
+- **Email**: `bqueen@gmail.com`
+- **Password**: `1234`
 
-### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login with existing credentials
+### Dashboard
+- **Order Management**: View all customer orders with real-time updates
+- **Status Updates**: Mark orders as "ready" for pickup
+- **Revenue Tracking**: Total revenue and order statistics
+- **Menu Management**: Add new food items to the menu
 
-### Products
-- `GET /api/products` - Get all products
-- `GET /api/products/:id` - Get a specific product by ID
+### Admin API Endpoints
+```
+GET  /api/orders          # Get all orders
+POST /api/products        # Add new menu item
+PUT  /api/orders/:id/status # Update order status
+```
 
-### Orders
-- `POST /api/orders` - Create a new order
-- `GET /api/orders/:id` - Get order details by ID
-- `GET /api/orders/user/:userId` - Get all orders for a user
-- `PUT /api/orders/:id/status` - Update order status
+## 📋 Features
 
-### Features
-- User registration and authentication
-- Product catalog management
-- Order creation and tracking
-- Real-time order status updates
-- In-memory data storage (easily replaceable with a database)
+- 🍔 Food ordering system
+- 🖨️ Print services
+- 🔐 User authentication
+- 📦 Order tracking
+- 🛒 Shopping cart
+- 💳 Checkout system
+- 👨‍💼 Admin panel for order management
+- 📊 Real-time dashboard
+- ➕ Dynamic menu management
 
-## Technology Stack
+## 🛠️ Tech Stack
 
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS
 - **Backend**: Node.js + Express + TypeScript
-- **Database**: In-memory storage (ready for database integration)
+- **Admin Panel**: Separate React app
+- **Database**: In-memory storage
