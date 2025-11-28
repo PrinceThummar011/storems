@@ -132,9 +132,9 @@ If your commits are not appearing on your GitHub contribution graph, check the f
    
    If you want to keep your email private, use GitHub's noreply email:
    ```sh
-   git config user.email "123456789+YourUsername@users.noreply.github.com"
+   git config user.email "ID+YourUsername@users.noreply.github.com"
    ```
-   Find your noreply email in GitHub Settings > Emails.
+   Replace `ID` with your GitHub user ID and `YourUsername` with your GitHub username. Find your noreply email in GitHub Settings > Emails (it will look like `12345678+username@users.noreply.github.com`).
 
 4. **Fix existing commits (optional)**
    
