@@ -67,18 +67,6 @@ POST /api/products        # Add new menu item
 PUT  /api/orders/:id/status # Update order status
 ```
 
-## 📋 Features
-
-- 🍔 Food ordering system
-- 🖨️ Print services
-- 🔐 User authentication
-- 📦 Order tracking
-- 🛒 Shopping cart
-- 💳 Checkout system
-- 👨‍💼 Admin panel for order management
-- 📊 Real-time dashboard
-- ➕ Dynamic menu management
-
 ## 🛠️ Tech Stack
 
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS
