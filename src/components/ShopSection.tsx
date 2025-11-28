@@ -35,15 +35,9 @@ export default function ShopSection({ cart, onAddToCart, onUpdateQuantity }: Sho
     fetchProducts();
   }, []);
 
-  const visibleProducts = products.filter(p => {
-    const name = p.name.toLowerCase();
-    const category = p.category.toLowerCase();
-    return !name.includes('pasta') && !category.includes('pasta');
-  });
+  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
-  const categories = ['All', ...Array.from(new Set(visibleProducts.map(p => p.category)))];
-
-  const filteredProducts = visibleProducts.filter(product => {
+  const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;

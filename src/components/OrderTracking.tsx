@@ -14,8 +14,7 @@ export default function OrderTracking() {
     setSearchedOrder(null);
 
     try {
-      const trimmedId = orderId.trim();
-      const response = await fetch(`http://localhost:3001/api/orders/${trimmedId.toUpperCase()}`);
+      const response = await fetch(`http://localhost:3001/api/orders/${orderId.toUpperCase()}`);
       if (response.ok) {
         const order = await response.json();
         setSearchedOrder(order);
@@ -95,7 +94,7 @@ export default function OrderTracking() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <h3 className="text-2xl font-bold mb-2">Order Details</h3>
-            <p className="text-blue-100">Order ID: {searchedOrder.id}</p>
+            <p className="text-blue-100">Order ID: {searchedOrder.orderId}</p>
           </div>
 
           <div className="p-6">
@@ -117,11 +116,6 @@ export default function OrderTracking() {
               })()}
             </div>
 
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-1">Order ID</p>
-              <p className="font-mono text-sm text-gray-900">{searchedOrder.id}</p>
-            </div>
-
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Customer Name</p>
@@ -136,24 +130,18 @@ export default function OrderTracking() {
             <div className="border-t pt-4">
               <h4 className="font-semibold text-gray-900 mb-3">Order Items</h4>
               <ul className="space-y-2">
-                {Array.isArray(searchedOrder.items) &&
-                  searchedOrder.items.map((item: any, index: number) => (
-                    <li key={index} className="flex items-center space-x-2 text-gray-700">
-                      <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                      <span>
-                        {item.product
-                          ? `${item.quantity} x ${item.product.name}`
-                          : String(item)}
-                      </span>
-                    </li>
-                  ))}
-                {Array.isArray(searchedOrder.printOrders) &&
-                  searchedOrder.printOrders.length > 0 && (
-                    <li className="flex items-center space-x-2 text-gray-700">
-                      <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                      <span>{searchedOrder.printOrders.length} Print Order(s)</span>
-                    </li>
-                  )}
+                {searchedOrder.items.map((item: string, index: number) => (
+                  <li key={index} className="flex items-center space-x-2 text-gray-700">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+                {searchedOrder.printOrders > 0 && (
+                  <li className="flex items-center space-x-2 text-gray-700">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                    <span>{searchedOrder.printOrders} Print Order(s)</span>
+                  </li>
+                )}
               </ul>
             </div>
 

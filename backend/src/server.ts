@@ -37,7 +37,7 @@ app.use(cors());
 app.use(express.json());
 
 // Sample products data (in a real app, this would come from a database)
-const initialProducts = [
+const products = [
   {
     id: 'p1',
     name: 'Classic Burger',
@@ -148,8 +148,6 @@ const initialProducts = [
   }
 ];
 
-let products = [...initialProducts];
-
 // API endpoints
 // Authentication endpoints
 app.post('/api/auth/register', (req: Request, res: Response) => {
@@ -213,34 +211,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
 // Products endpoints
 app.get('/api/products', (req: Request, res: Response) => {
   console.log('GET /api/products - Returning products');
-  const visibleProducts = products.filter(p => {
-    const name = p.name.toLowerCase();
-    const category = p.category.toLowerCase();
-    return !name.includes('pasta') && !category.includes('pasta');
-  });
-  res.json(visibleProducts);
-});
-
-app.post('/api/products', (req: Request, res: Response) => {
-  const { name, description, price, image, stock, category } = req.body;
-
-  if (!name || !description || price === undefined || !image || stock === undefined || !category) {
-    return res.status(400).json({ message: 'Missing product fields' });
-  }
-
-  const newProduct = {
-    id: `p${Date.now()}`,
-    name,
-    description,
-    price: Number(price),
-    image,
-    stock: Number(stock),
-    category
-  };
-
-  products = [newProduct, ...products];
-  console.log('Product added:', newProduct.name);
-  res.status(201).json(newProduct);
+  res.json(products);
 });
 
 app.get('/api/products/:id', (req: Request, res: Response) => {
@@ -254,9 +225,6 @@ app.get('/api/products/:id', (req: Request, res: Response) => {
 });
 
 // Order endpoints
-app.get('/api/orders', (req: Request, res: Response) => {
-  res.json(orders);
-});
 app.post('/api/orders', (req: Request, res: Response) => {
   const { userId, customerName, customerEmail, customerPhone, items, printOrders, subtotal, tax, total } = req.body;
 
