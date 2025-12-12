@@ -2,7 +2,7 @@
 
 A modern web application for food ordering and print services with full-stack functionality.
 
-## 🚀 Quick Start
+## 🚀 Quick Start:
 
 ### Prerequisites
 - Node.js (v16 or higher)
