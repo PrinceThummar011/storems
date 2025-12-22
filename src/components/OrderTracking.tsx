@@ -94,7 +94,7 @@ export default function OrderTracking() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <h3 className="text-2xl font-bold mb-2">Order Details</h3>
-            <p className="text-blue-100">Order ID: {searchedOrder.orderId}</p>
+            <p className="text-blue-100">Order ID: {searchedOrder.id}</p>
           </div>
 
           <div className="p-6">
@@ -123,23 +123,34 @@ export default function OrderTracking() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Order Date</p>
-                <p className="font-medium text-gray-900">{searchedOrder.orderDate}</p>
+                <p className="font-medium text-gray-900">
+                  {new Date(searchedOrder.orderDate).toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
               </div>
             </div>
 
             <div className="border-t pt-4">
               <h4 className="font-semibold text-gray-900 mb-3">Order Items</h4>
               <ul className="space-y-2">
-                {searchedOrder.items.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center space-x-2 text-gray-700">
-                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                    <span>{item}</span>
+                {searchedOrder.items?.map((item: any, index: number) => (
+                  <li key={index} className="flex items-center justify-between text-gray-700">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                      <span>{item.product?.name || item.name || 'Unknown Item'} x {item.quantity || 1}</span>
+                    </div>
+                    <span className="text-gray-600">₹{item.product?.price * item.quantity || item.price || 0}</span>
                   </li>
                 ))}
-                {searchedOrder.printOrders > 0 && (
+                {searchedOrder.printOrders && searchedOrder.printOrders.length > 0 && (
                   <li className="flex items-center space-x-2 text-gray-700">
                     <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                    <span>{searchedOrder.printOrders} Print Order(s)</span>
+                    <span>{searchedOrder.printOrders.length} Print Order(s)</span>
                   </li>
                 )}
               </ul>

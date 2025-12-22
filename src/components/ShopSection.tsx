@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Product, CartItem } from '../types';
 import ProductCard from './ProductCard';
+import { PRODUCTS } from '../data/products';
 
 interface ShopSectionProps {
   cart: CartItem[];
@@ -12,7 +13,7 @@ interface ShopSectionProps {
 export default function ShopSection({ cart, onAddToCart, onUpdateQuantity }: ShopSectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +27,9 @@ export default function ShopSection({ cart, onAddToCart, onUpdateQuantity }: Sho
         const data = await response.json();
         setProducts(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        // Use fallback data if backend is unavailable
+        console.warn('Backend unavailable, using local data:', err);
+        setProducts(PRODUCTS);
       } finally {
         setLoading(false);
       }

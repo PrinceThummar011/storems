@@ -26,6 +26,16 @@ interface Order {
   paymentStatus: 'pending' | 'paid';
 }
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  stock: number;
+  category: string;
+}
+
 // In-memory storage (in production, use a database)
 const users: User[] = [];
 const orders: Order[] = [];
