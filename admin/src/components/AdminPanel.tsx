@@ -39,6 +39,10 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'url' | 'upload'>('url');
+  const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -87,10 +91,26 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
     };
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Get unique categories from existing products
+  const existingCategories = Array.from(new Set(products.map(p => p.category))).sort();
 
   const handleAddProduct = async (event: FormEvent) => {
     event.preventDefault();
@@ -98,11 +118,40 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
     setMessage(null);
 
     try {
+      let imageUrl = formData.image;
+
+      // If using file upload, upload the image first
+      if (uploadMethod === 'upload' && imageFile) {
+        const formDataToUpload = new FormData();
+        formDataToUpload.append('image', imageFile);
+
+        const uploadRes = await fetch('http://localhost:3001/api/upload', {
+          method: 'POST',
+          body: formDataToUpload
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+
+      // Use newCategory if user selected "__new__"
+      const categoryToUse = formData.category === '__new__' ? newCategory : formData.category;
+
+      if (!categoryToUse) {
+        throw new Error('Please enter a category');
+      }
+
       const res = await fetch('http://localhost:3001/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          category: categoryToUse,
+          image: imageUrl,
           price: Number(formData.price),
           stock: Number(formData.stock)
         })
@@ -122,6 +171,9 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
         stock: '',
         category: ''
       });
+      setImageFile(null);
+      setImagePreview(null);
+      setNewCategory('');
       setMessage('Product added successfully');
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Unable to add product');
@@ -294,23 +346,97 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
                   </div>
                   <div className="field">
                     <label className="label">Category</label>
-                    <input
+                    <select
                       name="category"
                       className="input"
                       value={formData.category}
                       onChange={handleInputChange}
                       required
-                    />
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <option value="">Select a category</option>
+                      {existingCategories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                      <option value="__new__">+ Add New Category</option>
+                    </select>
+                    {formData.category === '__new__' && (
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="Enter new category name"
+                        style={{ marginTop: '0.5rem' }}
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        required
+                      />
+                    )}
                   </div>
                   <div className="field">
-                    <label className="label">Image URL</label>
-                    <input
-                      name="image"
-                      className="input"
-                      value={formData.image}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <label className="label">Image</label>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                          type="radio"
+                          value="url"
+                          checked={uploadMethod === 'url'}
+                          onChange={() => {
+                            setUploadMethod('url');
+                            setImageFile(null);
+                            setImagePreview(null);
+                          }}
+                        />
+                        <span>Image URL</span>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                          type="radio"
+                          value="upload"
+                          checked={uploadMethod === 'upload'}
+                          onChange={() => {
+                            setUploadMethod('upload');
+                            setFormData(prev => ({ ...prev, image: '' }));
+                          }}
+                        />
+                        <span>Upload Image</span>
+                      </label>
+                    </div>
+                    {uploadMethod === 'url' ? (
+                      <input
+                        name="image"
+                        className="input"
+                        placeholder="https://example.com/image.jpg"
+                        value={formData.image}
+                        onChange={handleInputChange}
+                        required={uploadMethod === 'url'}
+                      />
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="input"
+                          onChange={handleImageFileChange}
+                          required={uploadMethod === 'upload'}
+                          style={{ padding: '0.5rem' }}
+                        />
+                        {imagePreview && (
+                          <div style={{ marginTop: '0.75rem' }}>
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              style={{ 
+                                width: '100%', 
+                                maxHeight: '200px', 
+                                objectFit: 'cover', 
+                                borderRadius: '0.5rem',
+                                border: '1px solid #e5e7eb'
+                              }} 
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {message && <div className="success">{message}</div>}
                   <button type="submit" className="button" disabled={submitting}>

@@ -1,5 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 // Data models
 interface User {
@@ -43,8 +46,43 @@ const orders: Order[] = [];
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
+  }
+});
+
 app.use(cors());
 app.use(express.json());
+// Serve uploaded images statically
+app.use('/uploads', express.static(uploadsDir));
 
 // Sample products data (in a real app, this would come from a database)
 const products = [
@@ -222,6 +260,24 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
 app.get('/api/products', (req: Request, res: Response) => {
   console.log('GET /api/products - Returning products');
   res.json(products);
+});
+
+// Image upload endpoint
+app.post('/api/upload', upload.single('image'), (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    
+    // Return the URL where the image can be accessed
+    const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+    console.log('Image uploaded:', imageUrl);
+    
+    res.status(200).json({ imageUrl });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ message: 'Failed to upload image' });
+  }
 });
 
 app.post('/api/products', (req: Request, res: Response) => {
