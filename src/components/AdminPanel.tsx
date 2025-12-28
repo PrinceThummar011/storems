@@ -9,6 +9,21 @@ interface Order {
   total: number;
   status: string;
   orderDate: string;
+  items: Array<{
+    product: {
+      id: string;
+      name: string;
+      price: number;
+    };
+    quantity: number;
+  }>;
+  printOrders: Array<{
+    id: string;
+    type: string;
+    copies: number;
+    price: number;
+    colorMode: string;
+  }>;
 }
 
 interface AdminPanelProps {
@@ -151,8 +166,34 @@ export default function AdminPanel({ onLogout }: AdminPanelProps) {
                       </span>
                     </div>
                     <p className="text-sm text-gray-400">{order.customerEmail}</p>
-                    <div className="flex items-center justify-between mt-2 text-sm">
-                      <span className="text-gray-300">₹{order.total.toFixed(2)}</span>
+                    <p className="text-xs text-gray-500 mt-1">Order ID: {order.id}</p>
+                    
+                    {/* Display ordered items */}
+                    {order.items && order.items.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-800">
+                        <p className="text-xs text-gray-400 mb-1">Items:</p>
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="text-xs text-gray-300 ml-2">
+                            • {item.product.name} × {item.quantity} - ₹{(item.product.price * item.quantity).toFixed(2)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Display print orders */}
+                    {order.printOrders && order.printOrders.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-800">
+                        <p className="text-xs text-gray-400 mb-1">Print Orders:</p>
+                        {order.printOrders.map((printOrder, idx) => (
+                          <div key={idx} className="text-xs text-gray-300 ml-2">
+                            • {printOrder.type} - {printOrder.copies} copies ({printOrder.colorMode}) - ₹{printOrder.price.toFixed(2)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between mt-2 text-sm pt-2 border-t border-gray-800">
+                      <span className="text-gray-300 font-semibold">₹{order.total.toFixed(2)}</span>
                       <span className="px-2 py-0.5 rounded-full bg-gray-800 text-xs uppercase">
                         {order.status}
                       </span>

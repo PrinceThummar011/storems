@@ -3,27 +3,27 @@ import { Product } from '../types';
 export const PRODUCTS: Product[] = [
   {
     id: 'p1',
-    name: 'Classic Burger',
-    description: 'Juicy beef patty with lettuce, tomato, and special sauce',
-    price: 299,
+    name: 'Veggie Burger',
+    description: 'Delicious plant-based patty with fresh vegetables and special sauce',
+    price: 249,
     image: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
     stock: 50,
     category: 'Burgers'
   },
   {
     id: 'p2',
-    name: 'Cheese Burger',
-    description: 'Double cheese with premium beef patty',
-    price: 349,
+    name: 'Paneer Burger',
+    description: 'Grilled paneer patty with cheese and vegetables',
+    price: 279,
     image: 'https://images.pexels.com/photos/1556688/pexels-photo-1556688.jpeg?auto=compress&cs=tinysrgb&w=400',
     stock: 30,
     category: 'Burgers'
   },
   {
     id: 'p3',
-    name: 'Chicken Burger',
-    description: 'Crispy fried chicken with mayo and lettuce',
-    price: 279,
+    name: 'Mushroom Burger',
+    description: 'Crispy mushroom patty with mayo and fresh lettuce',
+    price: 269,
     image: 'https://images.pexels.com/photos/15832879/pexels-photo-15832879.jpeg?auto=compress&cs=tinysrgb&w=400',
     stock: 25,
     category: 'Burgers'
@@ -57,10 +57,10 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'p7',
-    name: 'Chicken Wings',
-    description: '6 pieces spicy chicken wings',
-    price: 249,
-    image: 'https://images.pexels.com/photos/60616/fried-chicken-chicken-fried-crunchy-60616.jpeg?auto=compress&cs=tinysrgb&w=400',
+    name: 'Paneer Tikka',
+    description: '6 pieces spicy grilled paneer tikka',
+    price: 229,
+    image: 'https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg?auto=compress&cs=tinysrgb&w=400',
     stock: 45,
     category: 'Sides'
   },
@@ -84,10 +84,10 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'p10',
-    name: 'Chicken Nuggets',
-    description: '10 pieces crispy chicken nuggets',
-    price: 179,
-    image: 'https://images.pexels.com/photos/6210876/pexels-photo-6210876.jpeg?auto=compress&cs=tinysrgb&w=400',
+    name: 'Veg Nuggets',
+    description: '10 pieces crispy vegetable nuggets',
+    price: 159,
+    image: 'https://images.pexels.com/photos/4099237/pexels-photo-4099237.jpeg?auto=compress&cs=tinysrgb&w=400',
     stock: 70,
     category: 'Sides'
   },

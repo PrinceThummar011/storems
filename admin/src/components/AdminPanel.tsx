@@ -8,6 +8,21 @@ interface Order {
   total: number;
   status: string;
   orderDate: string;
+  items: Array<{
+    product: {
+      id: string;
+      name: string;
+      price: number;
+    };
+    quantity: number;
+  }>;
+  printOrders: Array<{
+    id: string;
+    type: string;
+    copies: number;
+    price: number;
+    colorMode: string;
+  }>;
 }
 
 interface Product {
@@ -271,8 +286,33 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
                         <br />
                         <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>ID: {order.id}</span>
                       </div>
+                      
+                      {/* Display ordered items */}
+                      {order.items && order.items.length > 0 && (
+                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
+                          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Items:</p>
+                          {order.items.map((item, idx) => (
+                            <div key={idx} style={{ fontSize: '0.75rem', color: '#374151', marginLeft: '0.5rem' }}>
+                              • {item.product.name} × {item.quantity} - ₹{(item.product.price * item.quantity).toFixed(2)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Display print orders */}
+                      {order.printOrders && order.printOrders.length > 0 && (
+                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
+                          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Print Orders:</p>
+                          {order.printOrders.map((printOrder, idx) => (
+                            <div key={idx} style={{ fontSize: '0.75rem', color: '#374151', marginLeft: '0.5rem' }}>
+                              • {printOrder.type} - {printOrder.copies} copies ({printOrder.colorMode}) - ₹{printOrder.price.toFixed(2)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
                       <div className="order-bottom">
-                        <span>₹{order.total.toFixed(2)}</span>
+                        <span style={{ fontWeight: 600 }}>₹{order.total.toFixed(2)}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <span className="order-status">{order.status}</span>
                           <button
