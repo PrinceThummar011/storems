@@ -32,18 +32,18 @@ export default function Header({
           <div className="cursor-pointer" onClick={() => onNavigate('home')}>
             <div className="flex flex-col">
               <div className="text-2xl font-bold leading-tight tracking-tight">
-                <span className="text-red-500">B</span>
-                <span className="text-orange-500">u</span>
-                <span className="text-yellow-500">r</span>
-                <span className="text-green-500">g</span>
-                <span className="text-blue-500">e</span>
-                <span className="text-purple-500">r</span>
-                <span className="text-pink-500"> </span>
+                <span className="text-red-600">B</span>
+                <span className="text-red-600">u</span>
+                <span className="text-red-500">r</span>
+                <span className="text-orange-600">g</span>
+                <span className="text-orange-600">e</span>
+                <span className="text-orange-500">r</span>
+                <span className="text-orange-500"> </span>
                 <span className="text-red-600">Q</span>
-                <span className="text-orange-600">u</span>
-                <span className="text-yellow-600">e</span>
-                <span className="text-green-600">e</span>
-                <span className="text-blue-600">n</span>
+                <span className="text-red-600">u</span>
+                <span className="text-red-500">e</span>
+                <span className="text-orange-600">e</span>
+                <span className="text-orange-500">n</span>
               </div>
               <div className="text-[10px] text-gray-600 dark:text-gray-400 -mt-1">Fast Food Ordering</div>
             </div>
