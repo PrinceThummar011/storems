@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { X, CreditCard, Smartphone, Wallet } from 'lucide-react';
-import { CartItem, PrintOrder } from '../types';
+import { CartItem } from '../types';
 
 interface CheckoutProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  printOrders: PrintOrder[];
   onOrderComplete: (orderId: string, customerInfo: any) => void;
 }
 
-export default function Checkout({ isOpen, onClose, items, printOrders, onOrderComplete }: CheckoutProps) {
+export default function Checkout({ isOpen, onClose, items, onOrderComplete }: CheckoutProps) {
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -19,8 +18,7 @@ export default function Checkout({ isOpen, onClose, items, printOrders, onOrderC
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0) +
-                  printOrders.reduce((sum, order) => sum + order.price, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const tax = subtotal * 0.18;
   const total = subtotal + tax;
 
@@ -39,7 +37,6 @@ export default function Checkout({ isOpen, onClose, items, printOrders, onOrderC
         customerEmail: customerInfo.email,
         customerPhone: customerInfo.phone,
         items,
-        printOrders,
         subtotal,
         tax,
         total

@@ -16,13 +16,6 @@ interface Order {
     };
     quantity: number;
   }>;
-  printOrders: Array<{
-    id: string;
-    type: string;
-    copies: number;
-    price: number;
-    colorMode: string;
-  }>;
 }
 
 interface Product {
@@ -294,18 +287,6 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
                           {order.items.map((item, idx) => (
                             <div key={idx} style={{ fontSize: '0.75rem', color: '#374151', marginLeft: '0.5rem' }}>
                               • {item.product.name} × {item.quantity} - ₹{(item.product.price * item.quantity).toFixed(2)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {/* Display print orders */}
-                      {order.printOrders && order.printOrders.length > 0 && (
-                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
-                          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Print Orders:</p>
-                          {order.printOrders.map((printOrder, idx) => (
-                            <div key={idx} style={{ fontSize: '0.75rem', color: '#374151', marginLeft: '0.5rem' }}>
-                              • {printOrder.type} - {printOrder.copies} copies ({printOrder.colorMode}) - ₹{printOrder.price.toFixed(2)}
                             </div>
                           ))}
                         </div>

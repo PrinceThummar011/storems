@@ -66,7 +66,7 @@ export default function Hero({ onNavigate }: HeroProps) {
                 <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Quality Assured</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Premium quality products and prints guaranteed</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Premium quality products guaranteed</p>
             </div>
             <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
               <div className="bg-blue-100 dark:bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">

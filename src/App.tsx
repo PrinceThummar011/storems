@@ -130,9 +130,7 @@ function App() {
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
           items={cartItems}
-          printOrders={[]}
           onUpdateQuantity={handleUpdateQuantity}
-          onRemovePrintOrder={() => {}}
           onCheckout={handleCheckout}
         />
 
@@ -140,7 +138,6 @@ function App() {
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}
           items={cartItems}
-          printOrders={[]}
           onOrderComplete={handleOrderComplete}
         />
 

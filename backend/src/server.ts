@@ -20,7 +20,6 @@ interface Order {
   customerEmail: string;
   customerPhone: string;
   items: any[]; // CartItem[]
-  printOrders: any[]; // PrintOrder[]
   subtotal: number;
   tax: number;
   total: number;
@@ -320,7 +319,7 @@ app.get('/api/orders', (req: Request, res: Response) => {
 });
 
 app.post('/api/orders', (req: Request, res: Response) => {
-  const { userId, customerName, customerEmail, customerPhone, items, printOrders, subtotal, tax, total } = req.body;
+  const { userId, customerName, customerEmail, customerPhone, items, subtotal, tax, total } = req.body;
 
   if (!customerName || !customerEmail || !customerPhone || !items) {
     return res.status(400).json({ message: 'Missing required order information' });
@@ -333,7 +332,6 @@ app.post('/api/orders', (req: Request, res: Response) => {
     customerEmail,
     customerPhone,
     items,
-    printOrders: printOrders || [],
     subtotal,
     tax,
     total,

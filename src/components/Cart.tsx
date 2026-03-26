@@ -1,13 +1,11 @@
-import { X, Trash2, ShoppingBag } from 'lucide-react';
-import { CartItem, PrintOrder } from '../types';
+import { X, ShoppingBag } from 'lucide-react';
+import { CartItem } from '../types';
 
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  printOrders: PrintOrder[];
   onUpdateQuantity: (productId: string, quantity: number) => void;
-  onRemovePrintOrder: (index: number) => void;
   onCheckout: () => void;
 }
 
@@ -15,17 +13,14 @@ export default function Cart({
   isOpen,
   onClose,
   items,
-  printOrders,
   onUpdateQuantity,
-  onRemovePrintOrder,
   onCheckout
 }: CartProps) {
-  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0) +
-                  printOrders.reduce((sum, order) => sum + order.price, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const tax = subtotal * 0.18;
   const total = subtotal + tax;
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0) + printOrders.length;
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   if (!isOpen) return null;
 
@@ -52,34 +47,6 @@ export default function Cart({
             </div>
           ) : (
             <div className="space-y-6">
-              {printOrders.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Print Orders</h3>
-                  {printOrders.map((order, index) => (
-                    <div key={index} className="bg-blue-50 rounded-lg p-4 mb-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{order.fileName}</p>
-                          <p className="text-sm text-gray-600">
-                            {order.pageCount} pages • {order.options.copies} copies
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {order.options.paperSize} • {order.options.colorType === 'color' ? 'Color' : 'B&W'} • {order.options.sides === 'double' ? 'Double-sided' : 'Single-sided'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => onRemovePrintOrder(index)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <p className="text-right font-semibold text-blue-600">₹{order.price}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {items.length > 0 && (
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">Products</h3>

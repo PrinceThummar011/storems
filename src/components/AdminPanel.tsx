@@ -17,13 +17,6 @@ interface Order {
     };
     quantity: number;
   }>;
-  printOrders: Array<{
-    id: string;
-    type: string;
-    copies: number;
-    price: number;
-    colorMode: string;
-  }>;
 }
 
 interface AdminPanelProps {
@@ -175,18 +168,6 @@ export default function AdminPanel({ onLogout }: AdminPanelProps) {
                         {order.items.map((item, idx) => (
                           <div key={idx} className="text-xs text-gray-300 ml-2">
                             • {item.product.name} × {item.quantity} - ₹{(item.product.price * item.quantity).toFixed(2)}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Display print orders */}
-                    {order.printOrders && order.printOrders.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-800">
-                        <p className="text-xs text-gray-400 mb-1">Print Orders:</p>
-                        {order.printOrders.map((printOrder, idx) => (
-                          <div key={idx} className="text-xs text-gray-300 ml-2">
-                            • {printOrder.type} - {printOrder.copies} copies ({printOrder.colorMode}) - ₹{printOrder.price.toFixed(2)}
                           </div>
                         ))}
                       </div>

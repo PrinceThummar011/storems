@@ -8,21 +8,6 @@ export interface Product {
   category: string;
 }
 
-export interface PrintOptions {
-  copies: number;
-  colorType: 'color' | 'bw';
-  sides: 'single' | 'double';
-  paperSize: 'A4' | 'A3' | 'Legal' | 'Letter';
-}
-
-export interface PrintOrder {
-  file: File;
-  fileName: string;
-  fileSize: number;
-  pageCount: number;
-  options: PrintOptions;
-  price: number;
-}
 
 export interface CartItem {
   product: Product;
@@ -31,7 +16,6 @@ export interface CartItem {
 
 export interface Cart {
   items: CartItem[];
-  printOrders: PrintOrder[];
 }
 
 export interface Order {
@@ -40,7 +24,6 @@ export interface Order {
   customerEmail: string;
   customerPhone: string;
   items: CartItem[];
-  printOrders: PrintOrder[];
   subtotal: number;
   tax: number;
   total: number;

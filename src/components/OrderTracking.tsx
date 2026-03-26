@@ -147,12 +147,6 @@ export default function OrderTracking() {
                     <span className="text-gray-600">₹{item.product?.price * item.quantity || item.price || 0}</span>
                   </li>
                 ))}
-                {searchedOrder.printOrders && searchedOrder.printOrders.length > 0 && (
-                  <li className="flex items-center space-x-2 text-gray-700">
-                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
-                    <span>{searchedOrder.printOrders.length} Print Order(s)</span>
-                  </li>
-                )}
               </ul>
             </div>
 
