@@ -1,37 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Store Management System - Login</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StoreEase — Smart Store. Simple Management.</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <h1>My Store Management System</h1>
-                <p>Welcome back! Please enter your details.</p>
-            </div>
-            
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="Enter your username" required>
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
-                </div>
-                
-                <div id="errorMessage" class="error-message"></div>
-                
-                <button type="submit" class="login-btn">Log In</button>
-            </form>
-        </div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#" class="logo">🏪 StoreEase</a>
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#login-section">Login</a></li>
+      <li><a href="#pricing" class="btn btn-nav">Get Started Free</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <h1>Manage Your Store <span class="gradient-text">Smarter</span>, Not Harder</h1>
+      <p class="hero-sub">StoreEase helps small shop owners manage products, billing, and stock — all in one place. No training needed.</p>
+      <div class="hero-btns">
+        <a href="#pricing" class="btn btn-primary">Start Free Trial</a>
+        <a href="#how-it-works" class="btn btn-outline">▶ Watch Demo</a>
+      </div>
     </div>
-    
-    <script src="login.js"></script>
+    <div class="hero-image">
+      <div class="dashboard-mockup">
+        <div class="mockup-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="mockup-title">StoreEase Dashboard</span></div>
+        <div class="mockup-body">
+          <div class="mock-card mc1"><span>📦</span><strong>348</strong><small>Products</small></div>
+          <div class="mock-card mc2"><span>💰</span><strong>₹12,450</strong><small>Revenue</small></div>
+          <div class="mock-card mc3"><span>📊</span><strong>42</strong><small>Sales Today</small></div>
+          <div class="mock-card mc4"><span>⚠️</span><strong>8</strong><small>Low Stock</small></div>
+          <div class="mock-chart"><div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div><div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div><div class="bar b7"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <h2 class="section-title">Everything Your Store Needs</h2>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">⚡</div><h3>Smart Billing</h3><p>Generate bills in seconds with our lightning-fast POS system.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔔</div><h3>Stock Alerts</h3><p>Never run out of stock — get notified when items are low.</p></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><h3>Sales Reports</h3><p>Know your daily, weekly, and monthly earnings at a glance.</p></div>
+      <div class="feature-card"><div class="feature-icon">📦</div><h3>Product Management</h3><p>Add and edit products easily with categories and pricing.</p></div>
+      <div class="feature-card"><div class="feature-icon">📴</div><h3>Works Offline</h3><p>No internet? No problem. Your data stays safe locally.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔐</div><h3>Simple Login</h3><p>One admin account, full control over your entire store.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <h2 class="section-title">Up and Running in 3 Steps</h2>
+    <div class="steps-flow">
+      <div class="step"><div class="step-num">1</div><div class="step-icon">📝</div><h3>Create Your Account</h3><p>Sign up in 30 seconds. No credit card required.</p></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-num">2</div><div class="step-icon">📦</div><h3>Add Your Products</h3><p>Enter your inventory with name, price, and quantity.</p></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-num">3</div><div class="step-icon">🧾</div><h3>Start Billing</h3><p>Generate invoices and manage sales instantly.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <h2 class="section-title light">Simple, Honest Pricing</h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Free Plan</h3><div class="price">₹0<span>/month</span></div>
+        <ul><li>✓ 50 products limit</li><li>✓ Basic billing</li><li>✓ 1 user</li><li class="muted">✗ Stock alerts</li><li class="muted">✗ Reports</li></ul>
+        <a href="#login-section" class="btn btn-outline-dark">Start Free</a>
+      </div>
+      <div class="price-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <h3>Starter Plan</h3><div class="price">₹299<span>/month</span></div>
+        <ul><li>✓ Unlimited products</li><li>✓ Full billing + PDF</li><li>✓ Stock alerts</li><li>✓ Sales reports</li><li>✓ Email support</li></ul>
+        <a href="#login-section" class="btn btn-primary">Get Started</a>
+      </div>
+      <div class="price-card">
+        <h3>Pro Plan</h3><div class="price">₹799<span>/month</span></div>
+        <ul><li>✓ Everything in Starter</li><li>✓ Multiple users</li><li>✓ Priority support</li><li>✓ Data export</li><li>✓ Custom branding</li></ul>
+        <a href="#" class="btn btn-outline-dark">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <h2 class="section-title">Trusted by Shop Owners</h2>
+    <div class="testimonial-grid">
+      <div class="testimonial-card"><div class="stars">★★★★★</div><p>"StoreEase made my billing 10x faster. I used to maintain registers manually — now everything is digital and easy!"</p><div class="author"><strong>Ramesh Patel</strong><small>Grocery Store, Surat</small></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><p>"The stock alert feature is a lifesaver. I never run out of important medicines now. Highly recommended!"</p><div class="author"><strong>Priya Shah</strong><small>Medical Shop, Ahmedabad</small></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><p>"Simple, clean, and does exactly what I need. Even my father who is 60+ years old can use it easily."</p><div class="author"><strong>Kiran Modi</strong><small>Stationery Store, Rajkot</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <div class="faq-item"><button class="faq-q">Do I need technical knowledge to use StoreEase? <span>+</span></button><div class="faq-a"><p>Not at all! StoreEase is designed for non-technical shop owners. If you can use a smartphone, you can use StoreEase.</p></div></div>
+      <div class="faq-item"><button class="faq-q">Is my data safe? <span>+</span></button><div class="faq-a"><p>Yes, your data is stored securely in your browser's local storage. We don't send any data to external servers.</p></div></div>
+      <div class="faq-item"><button class="faq-q">Can I use it on mobile? <span>+</span></button><div class="faq-a"><p>Absolutely! StoreEase is fully responsive and works beautifully on phones, tablets, and desktops.</p></div></div>
+      <div class="faq-item"><button class="faq-q">What happens after free trial? <span>+</span></button><div class="faq-a"><p>You can continue using the Free Plan forever with limited features, or upgrade to Starter or Pro for full access.</p></div></div>
+      <div class="faq-item"><button class="faq-q">Can I cancel anytime? <span>+</span></button><div class="faq-a"><p>Yes, there are no contracts. You can cancel or downgrade your plan anytime with zero hassle.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGIN -->
+<section class="login-section" id="login-section">
+  <div class="container">
+    <div class="login-card">
+      <h2>🏪 StoreEase</h2>
+      <p class="login-sub">Login to your Dashboard</p>
+      <form id="loginForm">
+        <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Enter username" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Enter password" required></div>
+        <div id="loginError" class="login-error"></div>
+        <button type="submit" class="btn btn-primary w-full">Login to Dashboard</button>
+      </form>
+      <a href="#hero" class="back-link">← Back to Home</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand"><h3>🏪 StoreEase</h3><p>Smart Store. Simple Management.</p></div>
+    <div class="footer-links"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#">Privacy Policy</a></div>
+  </div>
+  <div class="footer-bottom container"><p>Made with ❤️ for Indian Shop Owners</p><p>© 2024 StoreEase. All rights reserved.</p></div>
+</footer>
+
+<script src="landing.js"></script>
 </body>
 </html>
