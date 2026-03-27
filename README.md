@@ -1,75 +1,25 @@
-# StoreMS - Food Ordering & Print Services
+# My Store Management System
 
-A modern web application for food ordering and print services with full-stack functionality.
+A complete Store Management System built with **HTML, CSS, and JavaScript only** (no backend required).
 
-## 🚀 Quick Start:
+## Features
+- **Login Page** — Secure login with username/password (admin / admin123)
+- **Dashboard** — Live summary cards showing products count, today's sales, revenue, and low stock alerts
+- **Products Management** — Add, edit, and delete products (saved in browser localStorage)
+- **New Sale / Billing** — POS-style search, add-to-bill, and generate printable invoices
+- **Stock Management** — Color-coded inventory table with CSV export
+- **Sales Reports** — Sales history table with Chart.js bar graph for last 7 days
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
+## How to Run
+1. Open the `index.html` file in any modern web browser (Chrome, Firefox, Edge).
+2. Login with:
+   - **Username:** `admin`
+   - **Password:** `admin123`
+3. That's it! No server, no database, no installation needed.
 
-### Installation
-
-1. **Clone and install frontend dependencies**
-```bash
-git clone <repository-url>
-cd storems
-npm install
-```
-
-2. **Install backend dependencies**
-```bash
-cd backend
-npm install
-cd ..
-```
-
-### Running the Application
-
-1. **Start the backend server** (Terminal 1)
-```bash
-npm run dev-backend
-```
-Backend runs on: `http://localhost:3001`
-
-2. **Start the customer frontend** (Terminal 2)
-```bash
-npm run dev
-```
-Customer app runs on: `http://localhost:5173`
-
-3. **Start the admin panel** (Terminal 3 - Optional)
-```bash
-npm run dev-admin
-```
-Admin panel runs on: `http://localhost:5174`
-
-4. **Open your browser**
-- Customer app: `http://localhost:5173`
-- Admin panel: `http://localhost:5174`
-
-## 👨‍💼 Admin Panel Features
-
-### Admin Login
-- **Email**: `bqueen@gmail.com`
-- **Password**: `1234`
-
-### Dashboard
-- **Order Management**: View all customer orders with real-time updates
-- **Status Updates**: Mark orders as "ready" for pickup
-- **Revenue Tracking**: Total revenue and order statistics
-- **Menu Management**: Add new food items to the menu
-
-### Admin API Endpoints
-```
-GET  /api/orders          # Get all orders
-POST /api/products        # Add new menu item
-PUT  /api/orders/:id/status # Update order status
-```
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React + TypeScript + Vite + Tailwind CSS
-- **Backend**: Node.js + Express + TypeScript
-- **Admin Panel**: Separate React app
-- **Database**: In-memory storage
+## Tech Stack
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Chart.js (CDN) for reports chart
+- localStorage for data persistence

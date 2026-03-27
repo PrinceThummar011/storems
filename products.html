@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - My Store Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>My Store MS</h2>
+                <button class="mobile-menu-close" id="closeMenuBtn">&times;</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="products.html" class="nav-item active">Products</a>
+                <a href="new-sale.html" class="nav-item">New Sale</a>
+                <a href="stock.html" class="nav-item">Stock</a>
+                <a href="reports.html" class="nav-item">Reports</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-btn-full">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="openMenuBtn">&#9776;</button>
+                </div>
+                <div class="header-right">
+                    <span class="welcome-text">Welcome, <span id="displayUsername">Admin</span></span>
+                    <span class="date-text" id="todayDate"></span>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content">
+                <div class="page-header">
+                    <h1>Products Management</h1>
+                    <p>Add, edit, and manage your store's inventory.</p>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successAlert" class="alert alert-success" style="display: none;">
+                    Product saved successfully!
+                </div>
+
+                <!-- Add Product Form -->
+                <div class="content-card">
+                    <h2 class="card-title" id="formTitle">Add New Product</h2>
+                    <form id="productForm">
+                        <input type="hidden" id="productId">
+                        
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="productName">Product Name</label>
+                                <input type="text" id="productName" placeholder="Enter product name" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="productCategory">Category</label>
+                                <input type="text" id="productCategory" placeholder="e.g. Electronics, Groceries" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="productPrice">Price (₹)</label>
+                                <input type="number" id="productPrice" placeholder="0.00" min="0" step="1" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="productQuantity">Quantity</label>
+                                <input type="number" id="productQuantity" placeholder="0" min="0" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="productUnit">Unit</label>
+                                <select id="productUnit" required>
+                                    <option value="" disabled selected>Select Unit</option>
+                                    <option value="piece">Piece(s)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="litre">Litre (L)</option>
+                                    <option value="box">Box</option>
+                                    <option value="pack">Pack</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions border-top pt-15">
+                            <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="display: none;">Cancel Edit</button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">Save Product</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Product List Table -->
+                <div class="content-card mt-24">
+                    <h2 class="card-title">All Products</h2>
+                    <div class="table-responsive">
+                        <table class="data-table" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows generated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <p>No products found. Add your first product above!</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="products.js"></script>
+</body>
+</html>
