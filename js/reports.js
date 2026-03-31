@@ -23,7 +23,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeMenuBtn').addEventListener('click', () => sidebar.classList.remove('open'));
 
     // REPORTS LOGIC
-    let storeSales = JSON.parse(localStorage.getItem('storeSales')) || [];
+    let storeSales = [];
+    const token = localStorage.getItem('storems_token');
+
+    async function loadSales() {
+        try {
+            const res = await fetch('/api/sales', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (res.ok) {
+                storeSales = await res.json();
+            } else {
+                storeSales = [];
+            }
+        } catch (err) {
+            console.error('Failed to load sales', err);
+            storeSales = [];
+        }
+    }
     
     const salesTableBody = document.querySelector('#salesTable tbody');
     const emptyState = document.getElementById('emptyState');
@@ -37,10 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayStr = new Date().toDateString();
         
         storeSales.forEach(sale => {
-            const saleDate = new Date(sale.date);
+            const saleDate = new Date(sale.created_at);
             if (saleDate.toDateString() === todayStr) {
                 todaySalesCount++;
-                todayRevenue += parseFloat(sale.totalAmount);
+                todayRevenue += parseFloat(sale.total || 0);
             }
         });
 
@@ -58,17 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('salesTable').style.display = 'table';
             
             // Render from newest to oldest
-            const sortedSales = [...storeSales].sort((a,b) => new Date(b.date) - new Date(a.date));
+            const sortedSales = [...storeSales].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
             
             sortedSales.forEach(sale => {
-                const saleDate = new Date(sale.date);
+                const saleDate = new Date(sale.created_at);
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="font-weight: 500;">${sale.billNumber}</td>
+                    <td style="font-weight: 500;">INV-${sale.id}</td>
                     <td>${saleDate.toLocaleDateString()}</td>
                     <td>${saleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                    <td>${sale.totalItems}</td>
-                    <td style="font-weight: 600;">₹${parseFloat(sale.totalAmount).toFixed(2)}</td>
+                    <td>${sale.total_items || 0}</td>
+                    <td style="font-weight: 600;">₹${parseFloat(sale.total || 0).toFixed(2)}</td>
                 `;
                 salesTableBody.appendChild(tr);
             });
@@ -92,11 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Aggregate revenue per day
         storeSales.forEach(sale => {
-            const saleDate = new Date(sale.date);
+            const saleDate = new Date(sale.created_at);
             const dateStr = saleDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             // Only aggregate if it falls within the mapped last 7 days
             if (dataMap.hasOwnProperty(dateStr)) {
-                dataMap[dateStr] += parseFloat(sale.totalAmount);
+                dataMap[dateStr] += parseFloat(sale.total || 0);
             }
         });
 
@@ -137,19 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    computeSummary();
-    renderTable();
-    renderChart();
+    loadSales().then(() => {
+        computeSummary();
+        renderTable();
+        renderChart();
+    });
 
     // Clear history
     clearHistoryBtn.addEventListener('click', () => {
-        if (storeSales.length === 0) return;
-        
-        if(confirm('Are you absolutely sure you want to clear ALL sales history? This cannot be undone.')) {
-            storeSales = [];
-            localStorage.setItem('storeSales', JSON.stringify(storeSales));
-            window.location.reload(); 
-        }
+        alert('Sales history is stored securely on the server and cannot be cleared from here.');
     });
 
 });

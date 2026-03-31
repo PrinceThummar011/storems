@@ -33,8 +33,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             dashLowStock.textContent = lowStockCount;
         }
 
-        // We mock sales for now or get from API once sales endpoint exists
-        const storeSales = getLocalData('storeSales', []);
+        // Sales from API
+        let sales = [];
+        const salesRes = await fetch('/api/sales', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (salesRes.ok) sales = await salesRes.json();
 
         // 3. Today's Sales && 4. Monthly Revenue
         let todaySalesCount = 0;
@@ -44,13 +46,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-        storeSales.forEach(sale => {
-            const saleDate = new Date(sale.date);
+        sales.forEach(sale => {
+            const saleDate = new Date(sale.created_at);
             if (saleDate >= startOfToday) {
-                todaySalesCount++;
+                todaySalesCount += 1;
             }
             if (saleDate >= startOfMonth) {
-                monthlyRevenue += parseFloat(sale.total);
+                monthlyRevenue += parseFloat(sale.total || 0);
             }
         });
 
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const dashMonthlyRevenue = document.getElementById('dashboardMonthlyRevenue');
         if (dashMonthlyRevenue) {
-            dashMonthlyRevenue.textContent = typeof formatCurrency === 'function' ? formatCurrency(monthlyRevenue) : '$' + monthlyRevenue.toFixed(2);
+            dashMonthlyRevenue.textContent = typeof formatCurrency === 'function' ? formatCurrency(monthlyRevenue) : '₹' + monthlyRevenue.toFixed(2);
         }
 
         // Populate Recent Activity Table (Products)

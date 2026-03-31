@@ -68,7 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: p.name,
                     price: parseFloat(p.price),
                     quantity: parseInt(p.stock),
-                    unit: p.unit || 'piece'
+                    unit: p.unit || 'piece',
+                    category: p.category || ''
                 }));
                 console.log("storeProducts:", storeProducts);
             } else {
@@ -95,14 +96,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const matches = storeProducts.filter(p => 
+        const matches = storeProducts.filter(p =>
             p.name.toLowerCase().includes(query)
         );
-        
+
         console.log("Matches found:", matches.length);
-        
+
+        searchResults.style.display = 'block';
+
         if (matches.length > 0) {
-            searchResults.style.display = 'block';
             matches.forEach(product => {
                 const li = document.createElement('li');
                 li.style.padding = '10px';
@@ -119,6 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.addEventListener('mouseout', () => li.style.backgroundColor = 'transparent');
                 searchResults.appendChild(li);
             });
+        } else {
+            const li = document.createElement('li');
+            li.style.padding = '10px';
+            li.style.color = '#6b7280';
+            li.style.textAlign = 'center';
+            li.textContent = `No products found for "${query}"`;
+            searchResults.appendChild(li);
         }
     });
 
@@ -201,34 +210,70 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBill();
     };
 
-    // Generate invoice
-    generateBillBtn.addEventListener('click', () => {
+    // Generate invoice & finalize sale (backend persisted)
+    generateBillBtn.addEventListener('click', async () => {
+        if (currentBill.length === 0) return;
+
+        const token = localStorage.getItem('storems_token');
         const invDate = document.getElementById('invDate');
         const invNumber = document.getElementById('invNumber');
         const invCashier = document.getElementById('invCashier');
         const invItems = document.getElementById('invItems');
         const invTotal = document.getElementById('invTotal');
-        
-        invDate.textContent = new Date().toLocaleDateString();
-        invNumber.textContent = 'INV-' + Date.now();
-        invCashier.textContent = localStorage.getItem('storems_username') || 'Admin';
-        
-        invItems.innerHTML = '';
-        let total = 0;
-        currentBill.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>₹${item.price.toFixed(2)}</td>
-                <td>₹${item.total.toFixed(2)}</td>
-            `;
-            invItems.appendChild(tr);
-            total += item.total;
-        });
-        
-        invTotal.textContent = total.toFixed(2);
-        invoiceModal.style.display = 'flex';
+
+        const payloadItems = currentBill.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+        }));
+
+        try {
+            const saleRes = await fetch('/api/sales', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ items: payloadItems })
+            });
+
+            if (!saleRes.ok) {
+                throw new Error('Sale creation failed');
+            }
+
+            const saleData = await saleRes.json();
+
+            invDate.textContent = new Date().toLocaleDateString();
+            invNumber.textContent = 'INV-' + (saleData.saleId || Date.now());
+            invCashier.textContent = localStorage.getItem('storems_username') || 'Admin';
+
+            invItems.innerHTML = '';
+            let total = 0;
+            currentBill.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>₹${item.price.toFixed(2)}</td>
+                    <td>₹${item.total.toFixed(2)}</td>
+                `;
+                invItems.appendChild(tr);
+                total += item.total;
+
+                // update local cache to reflect new stock without refetch
+                const product = storeProducts.find(p => p.id == item.id);
+                if (product) {
+                    product.quantity = Math.max(0, product.quantity - item.quantity);
+                }
+            });
+
+            invTotal.textContent = (saleData.total ?? total).toFixed(2);
+
+            invoiceModal.style.display = 'flex';
+        } catch (err) {
+            console.error('Invoice generation failed', err);
+            alert('Could not finalize sale. Please try again.');
+        }
     });
 
     // Close invoice

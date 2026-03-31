@@ -56,6 +56,29 @@ function initDatabase() {
         )
     `);
 
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sales (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id INTEGER NOT NULL,
+            total REAL NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (tenant_id) REFERENCES tenants (id)
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sale_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sale_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            price REAL NOT NULL,
+            line_total REAL NOT NULL,
+            FOREIGN KEY (sale_id) REFERENCES sales (id),
+            FOREIGN KEY (product_id) REFERENCES products (id)
+        )
+    `);
+
     // Insert a default demo user for offline ease of use
     bcrypt.hash('admin123', 10).then(hashedPassword => {
         db.run(`INSERT OR IGNORE INTO tenants (id, store_name, owner_name, email, password) VALUES (1, 'Offline Demo Store', 'Local Admin', 'admin', ?)`, [hashedPassword]);
@@ -159,6 +182,107 @@ app.put("/api/products/:id", authenticateToken, (req, res) => {
             res.json({ message: "Updated" });
         }
     );
+});
+
+// Record Sale (with items) and decrement stock atomically
+app.post('/api/sales', authenticateToken, (req, res) => {
+    const { items } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ error: 'Items array is required.' });
+    }
+
+    // Compute total from payload to avoid trusting client-sent totals
+    let grandTotal = 0;
+    const normalizedItems = items.map((item) => {
+        const qty = parseInt(item.quantity, 10) || 0;
+        const price = parseFloat(item.price) || 0;
+        grandTotal += qty * price;
+        return {
+            product_id: item.product_id || item.id,
+            quantity: qty,
+            price,
+            line_total: qty * price
+        };
+    });
+
+    db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        db.run(
+            `INSERT INTO sales (tenant_id, total) VALUES (?, ?)`,
+            [req.user.tenant_id, grandTotal],
+            function(err) {
+                if (err) {
+                    db.run('ROLLBACK');
+                    return res.status(500).json({ error: 'Failed to create sale.' });
+                }
+
+                const saleId = this.lastID;
+                const insertItemStmt = db.prepare(
+                    `INSERT INTO sale_items (sale_id, product_id, quantity, price, line_total) VALUES (?, ?, ?, ?, ?)`
+                );
+                const updateStockStmt = db.prepare(
+                    `UPDATE products SET stock = CASE WHEN stock - ? < 0 THEN 0 ELSE stock - ? END WHERE id = ? AND tenant_id = ?`
+                );
+
+                let hadError = false;
+
+                normalizedItems.forEach((item) => {
+                    insertItemStmt.run(
+                        [saleId, item.product_id, item.quantity, item.price, item.line_total],
+                        (err) => {
+                            if (err) hadError = true;
+                        }
+                    );
+
+                    updateStockStmt.run(
+                        [item.quantity, item.quantity, item.product_id, req.user.tenant_id],
+                        (err) => {
+                            if (err) hadError = true;
+                        }
+                    );
+                });
+
+                insertItemStmt.finalize((err) => {
+                    if (err) hadError = true;
+
+                    updateStockStmt.finalize((err2) => {
+                        if (err2) hadError = true;
+
+                        if (hadError) {
+                            db.run('ROLLBACK');
+                            return res.status(500).json({ error: 'Failed to record sale items or update stock.' });
+                        }
+
+                        db.run('COMMIT', (commitErr) => {
+                            if (commitErr) {
+                                return res.status(500).json({ error: 'Failed to commit sale.' });
+                            }
+                            res.json({ saleId, total: grandTotal, message: 'Sale recorded successfully.' });
+                        });
+                    });
+                });
+            }
+        );
+    });
+});
+
+// Fetch sales list for tenant
+app.get('/api/sales', authenticateToken, (req, res) => {
+    const query = `
+        SELECT s.id, s.total, s.created_at, COUNT(si.id) AS total_items
+        FROM sales s
+        LEFT JOIN sale_items si ON s.id = si.sale_id
+        WHERE s.tenant_id = ?
+        GROUP BY s.id
+        ORDER BY s.created_at DESC
+    `;
+
+    db.all(query, [req.user.tenant_id], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch sales.' });
+        res.json(rows || []);
+    });
 });
 
 // Start Server
