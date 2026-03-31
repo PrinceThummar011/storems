@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Check authentication
-    if (localStorage.getItem('isLoggedIn') !== 'true') {
+    if (localStorage.getItem('storems_loggedin') !== 'true') {
         window.location.href = 'login.html';
         return;
     }
 
     // Header logic
-    const username = localStorage.getItem('username');
+    const username = localStorage.getItem('storems_username');
     if (username) {
         document.getElementById('displayUsername').textContent = username.charAt(0).toUpperCase() + username.slice(1);
     }

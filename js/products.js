@@ -1,13 +1,11 @@
 /**
  * Products Management
- * Add, edit, delete, and manage store products
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize app
-    initializeApp();
+    if(typeof initializeApp === 'function') initializeApp();
 
-    // DOM Elements
     const productForm = document.getElementById('productForm');
     const productsTableBody = document.querySelector('#productsTable tbody');
     const emptyState = document.getElementById('emptyState');
@@ -15,164 +13,252 @@ document.addEventListener('DOMContentLoaded', () => {
     const formTitle = document.getElementById('formTitle');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Get products from localStorage
-    let products = getLocalData('storeProducts', []);
+    let products = [];
+    
+    async function loadProductsFromDB() {
+        try {
+            const token = localStorage.getItem('storems_token');
+            console.log("🔍 Attempting to load products...");
+            console.log("📋 Token exists:", !!token);
+            console.log("🔑 Token:", token ? token.substring(0, 30) + "..." : "NONE");
+            
+            if (!token) {
+                console.error("❌ No token found! User not logged in.");
+                if(typeof showErrorMessage === 'function') showErrorMessage('❌ Not logged in. Refresh the page and login again.');
+                return;
+            }
+            
+            console.log("⏳ Fetching from /api/products...");
+            const res = await fetch('/api/products', {
+                method: 'GET',
+                headers: { 
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log("📡 Response received. Status:", res.status, res.statusText);
+            
+            if (res.ok) {
+                const data = await res.json();
+                products = Array.isArray(data) ? data : [];
+                console.log("✅ Products loaded successfully!");
+                console.log("📊 Total products:", products.length);
+                products.forEach((p, i) => {
+                    console.log(`   ${i+1}. ${p.name} (ID: ${p.id}, Price: ${p.price}, Stock: ${p.stock})`);
+                });
+                renderProducts();
+            } else {
+                const errorText = await res.text();
+                console.error("❌ Failed to load products");
+                console.error("   Status:", res.status);
+                console.error("   Response:", errorText.substring(0, 200));
+                if(typeof showErrorMessage === 'function') showErrorMessage('❌ Error loading products. Status: ' + res.status);
+            }
+        } catch (e) { 
+            console.error("❌ Network error fetching products:", e.message); 
+            console.error("   Full error:", e);
+            if(typeof showErrorMessage === 'function') showErrorMessage('❌ Network error: ' + e.message);
+        }
+    }
+    
+    console.log("⏳ Page loaded - Loading products...");
+    loadProductsFromDB();
 
-    /**
-     * Render products table
-     */
     function renderProducts() {
         try {
+            console.log("🎨 Starting renderProducts()");
+            console.log("📌 productsTableBody element:", productsTableBody);
+            
+            if (!productsTableBody) {
+                console.error("❌ productsTableBody not found!");
+                return;
+            }
+            
             productsTableBody.innerHTML = '';
+            console.log("📊 Products to render:", products.length);
+            
             if (products.length === 0) {
-                emptyState.style.display = 'block';
-                document.getElementById('productsTable').style.display = 'none';
+                console.log("⚠️ No products found - showing empty state");
+                if(emptyState) emptyState.style.display = 'block';
+                const tbl = document.getElementById('productsTable');
+                if(tbl) tbl.style.display = 'none';
             } else {
-                emptyState.style.display = 'none';
-                document.getElementById('productsTable').style.display = 'table';
-                products.forEach((product) => {
+                console.log("✅ Showing products table with", products.length, "items");
+                if(emptyState) emptyState.style.display = 'none';
+                const tbl = document.getElementById('productsTable');
+                if(tbl) tbl.style.display = 'table';
+                
+                products.forEach((product, index) => {
+                    console.log(`  📦 Rendering product ${index + 1}:`, product.name);
+                    const priceDisp = typeof formatCurrency === 'function' ? formatCurrency(product.price) : '₹' + parseFloat(product.price).toFixed(2);
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${product.id}</td>
                         <td style="font-weight: 500;">${product.name}</td>
                         <td><span class="badge badge-light">${product.category}</span></td>
-                        <td>${formatCurrency(product.price)}</td>
-                        <td>${product.quantity} ${product.unit}</td>
+                        <td>${priceDisp}</td>
+                        <td>${product.stock} Units</td>
                         <td>
-                            <button class="btn btn-sm btn-secondary" onclick="editProduct('${product.id}')">Edit</button>
+                            <button class="btn btn-sm btn-secondary" onclick="editProduct('${product.id}')" style="margin-right: 5px;">Edit</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
                         </td>
                     `;
                     productsTableBody.appendChild(tr);
                 });
+                console.log("✅ All products rendered successfully!");
             }
         } catch (error) {
-            console.error('Error rendering products:', error);
-            showErrorMessage('Error loading products');
+            console.error('❌ Error rendering products:', error);
+            if(typeof showErrorMessage === 'function') showErrorMessage('Error rendering products: ' + error.message);
         }
     }
 
-    /**
-     * Reset form to initial state
-     */
     function resetForm() {
-        productForm.reset();
-        document.getElementById('productId').value = '';
-        formTitle.textContent = 'Add New Product';
-        submitBtn.textContent = 'Save Product';
-        cancelEditBtn.style.display = 'none';
+        if(productForm) productForm.reset();
+        const pid = document.getElementById('productId');
+        if(pid) pid.value = '';
+        if(formTitle) formTitle.textContent = 'Add New Product';
+        if(submitBtn) submitBtn.textContent = 'Save Product';
+        if(cancelEditBtn) cancelEditBtn.style.display = 'none';
     }
 
-    // Save product (Add or Update)
-    productForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        try {
-            const productIdField = document.getElementById('productId').value;
-            const name = document.getElementById('productName').value.trim();
-            const category = document.getElementById('productCategory').value.trim();
-            const price = document.getElementById('productPrice').value;
-            const quantity = document.getElementById('productQuantity').value;
-            const unit = document.getElementById('productUnit').value;
-
-            // Validation
-            if (!name || !category || !price || !quantity || !unit) {
-                showErrorMessage('Please fill all fields');
-                return;
-            }
-
-            if (!validatePrice(price)) {
-                showErrorMessage('Invalid price');
-                return;
-            }
-
-            if (!validateQuantity(quantity)) {
-                showErrorMessage('Invalid quantity');
-                return;
-            }
-
-            const newProduct = {
-                id: productIdField ? productIdField : generateUniqueId('PRD'),
-                name: name,
-                category: category,
-                price: price,
-                quantity: quantity,
-                unit: unit,
-            };
-
-            if (productIdField) {
-                // Update existing product
-                const index = products.findIndex(p => p.id === productIdField);
-                if (index !== -1) {
-                    products[index] = newProduct;
-                    showSuccessMessage('Product updated successfully!');
-                }
-            } else {
-                // Add new product
-                products.push(newProduct);
-                showSuccessMessage('Product added successfully!');
-            }
-
-            // Save to localStorage
-            saveLocalData('storeProducts', products);
-
-            // Reset and re-render
+    if(cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             resetForm();
-            renderProducts();
-        } catch (error) {
-            console.error('Error saving product:', error);
-            showErrorMessage('An error occurred while saving product');
-        }
-    });
+        });
+    }
 
-    /**
-     * Edit product
-     * @param {string} id - Product ID
-     */
+    if(productForm) {
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                console.log("📝 Form submitted - adding product");
+                
+                const pidField = document.getElementById('productId');
+                const nameT = document.getElementById('productName');
+                const categoryT = document.getElementById('productCategory');
+                const priceT = document.getElementById('productPrice');
+                const quantityT = document.getElementById('productQuantity');
+                
+                const pid = pidField ? pidField.value : '';
+                const name = nameT ? nameT.value.trim() : '';
+                const category = categoryT ? categoryT.value.trim() : '';
+                const price = parseFloat(priceT ? priceT.value : 0);
+                const quantity = parseInt(quantityT ? quantityT.value : 0);
+                
+                console.log("📊 Form data:", { name, category, price, quantity });
+
+                if (!name || !category || !price || !quantity) {
+                    console.error("❌ Missing fields:", { name, category, price, quantity });
+                    if(typeof showErrorMessage === 'function') showErrorMessage('❌ Please fill all fields');
+                    return;
+                }
+
+                if (pid) {
+                    // Update existing product
+                    console.log("✏️ Updating product ID:", pid);
+                    const res = await fetch('/api/products/' + pid, {
+                        method: 'PUT',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('storems_token') 
+                        },
+                        body: JSON.stringify({ name, category, price, stock: quantity })
+                    });
+                    console.log("📡 Update response status:", res.status);
+                    
+                    if (res.ok) {
+                        console.log("✅ Product updated successfully");
+                        if(typeof showSuccessMessage === 'function') showSuccessMessage('✅ Product updated successfully!');
+                        resetForm();
+                        loadProductsFromDB();
+                    } else {
+                        const errData = await res.text();
+                        console.error("❌ Error updating:", errData);
+                        if(typeof showErrorMessage === 'function') showErrorMessage('❌ Error updating product');
+                    }
+                } else {
+                    // Add new product
+                    console.log("➕ Adding new product");
+                    const payload = { name, category, price, stock: quantity };
+                    console.log("📤 Sending to API:", payload);
+                    
+                    const res = await fetch('/api/products', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('storems_token') 
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    console.log("📡 Add response status:", res.status);
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        console.log("✅ Product added successfully:", data);
+                        if(typeof showSuccessMessage === 'function') showSuccessMessage('✅ Product added successfully!');
+                        resetForm();
+                        await loadProductsFromDB();
+                    } else {
+                        const errData = await res.text();
+                        console.error("❌ Error adding product:", res.status, errData);
+                        if(typeof showErrorMessage === 'function') showErrorMessage('❌ Error: ' + (errData || 'Could not add product'));
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error in form submission:', error);
+                if(typeof showErrorMessage === 'function') showErrorMessage('❌ Error: ' + error.message);
+            }
+        });
+    }
+
     window.editProduct = (id) => {
         try {
-            const product = products.find(p => p.id === id);
+            const product = products.find(p => p.id == id);
             if (product) {
-                document.getElementById('productId').value = product.id;
-                document.getElementById('productName').value = product.name;
-                document.getElementById('productCategory').value = product.category;
-                document.getElementById('productPrice').value = product.price;
-                document.getElementById('productQuantity').value = product.quantity;
-                document.getElementById('productUnit').value = product.unit;
-
-                formTitle.textContent = 'Edit Product';
-                submitBtn.textContent = 'Update Product';
-                cancelEditBtn.style.display = 'inline-block';
-
-                document.querySelector('.page-header').scrollIntoView({ behavior: 'smooth' });
+                const pidField = document.getElementById('productId');
+                const nameT = document.getElementById('productName');
+                const categoryT = document.getElementById('productCategory');
+                const priceT = document.getElementById('productPrice');
+                const quantityT = document.getElementById('productQuantity');
+                
+                if (pidField) pidField.value = product.id;
+                if (nameT) nameT.value = product.name;
+                if (categoryT) categoryT.value = product.category;
+                if (priceT) priceT.value = product.price;
+                if (quantityT) quantityT.value = product.stock;
+                
+                if (formTitle) formTitle.textContent = 'Edit Product';
+                if (submitBtn) submitBtn.textContent = 'Update Product';
+                if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
+                
+                const hdr = document.querySelector('.page-header');
+                if(hdr) hdr.scrollIntoView({ behavior: 'smooth' });
             }
         } catch (error) {
             console.error('Error editing product:', error);
-            showErrorMessage('Error loading product for editing');
         }
     };
 
-    /**
-     * Delete product
-     * @param {string} id - Product ID
-     */
-    window.deleteProduct = (id) => {
-        try {
-            if (confirm('Are you sure you want to delete this product?')) {
-                products = products.filter(p => p.id !== id);
-                saveLocalData('storeProducts', products);
-                renderProducts();
-                showSuccessMessage('Product deleted successfully!');
+    window.deleteProduct = async (id) => {
+        if (confirm('Are you sure you want to delete this product?')) {
+            try {
+                const res = await fetch('/api/products/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('storems_token') }
+                });
+                if (res.ok) {
+                    if(typeof showSuccessMessage === 'function') showSuccessMessage('Product deleted successfully!');
+                    loadProductsFromDB();
+                } else {
+                    if(typeof showErrorMessage === 'function') showErrorMessage('Error deleting product');
+                }
+            } catch (error) {
+                console.error('Error deleting:', error);
             }
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            showErrorMessage('Error deleting product');
         }
     };
-
-    // Cancel edit button
-    cancelEditBtn.addEventListener('click', resetForm);
-
-    // Initial render
-    renderProducts();
 });

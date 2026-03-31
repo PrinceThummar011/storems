@@ -9,7 +9,7 @@
  * @returns {boolean} true if authenticated, false otherwise
  */
 function checkAuth() {
-    if (localStorage.getItem('isLoggedIn') !== 'true') {
+    if (localStorage.getItem('storems_loggedin') !== 'true') {
         window.location.href = 'login.html';
         return false;
     }
@@ -21,7 +21,7 @@ function checkAuth() {
  */
 function initializeHeader() {
     try {
-        const username = localStorage.getItem('username');
+        const username = localStorage.getItem('storems_username');
         const displayUsernameEl = document.getElementById('displayUsername');
         
         if (displayUsernameEl && username) {
@@ -47,7 +47,7 @@ function initializeLogout() {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('storems_loggedin'); localStorage.removeItem('storems_token'); localStorage.removeItem('storems_username');
                 localStorage.removeItem('username');
                 window.location.href = 'login.html';
             });
@@ -226,7 +226,7 @@ function clearAllAppData() {
     try {
         localStorage.removeItem('storeProducts');
         localStorage.removeItem('storeSales');
-        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('storems_loggedin'); localStorage.removeItem('storems_token'); localStorage.removeItem('storems_username');
         localStorage.removeItem('username');
         console.log('All app data cleared');
     } catch (error) {

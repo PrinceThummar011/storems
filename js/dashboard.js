@@ -3,57 +3,92 @@
  * Displays real-time metrics and store overview
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Initialize app (authentication, header, mobile menu)
-    initializeApp();
+    if(typeof initializeApp === 'function') initializeApp();
 
-    // Get data from localStorage
-    const storeProducts = getLocalData('storeProducts', []);
-    const storeSales = getLocalData('storeSales', []);
+    try {
+        const token = localStorage.getItem('storems_token');
+        
+        // Fetch products
+        let products = [];
+        const prodRes = await fetch('/api/products', { headers: { 'Authorization': 'Bearer ' + token } });
+        if(prodRes.ok) products = await prodRes.json();
 
-    // 1. Total Products
-    const dashTotalProducts = document.getElementById('dashboardTotalProducts');
-    if (dashTotalProducts) {
-        dashTotalProducts.textContent = storeProducts.length;
-    }
-
-    // 2. Low Stock Items (< 5)
-    let lowStockCount = 0;
-    storeProducts.forEach(product => {
-        if (parseInt(product.quantity) < 5) {
-            lowStockCount++;
+        // 1. Total Products
+        const dashTotalProducts = document.getElementById('dashboardTotalProducts');
+        if (dashTotalProducts) {
+            dashTotalProducts.textContent = products.length;
         }
-    });
-    const dashLowStock = document.getElementById('dashboardLowStock');
-    if (dashLowStock) {
-        dashLowStock.textContent = lowStockCount;
-    }
 
-    // 3. Today's Sales and Revenue
-    let todaySalesCount = 0;
-    let todayRevenue = 0;
-    const today = new Date();
-    const todayStr = today.toDateString();
-
-    storeSales.forEach(sale => {
-        try {
-            const saleDate = new Date(sale.date);
-            if (saleDate.toDateString() === todayStr) {
-                todaySalesCount++;
-                todayRevenue += parseFloat(sale.totalAmount) || 0;
+        // 2. Low Stock Items (< 5)
+        let lowStockCount = 0;
+        products.forEach(product => {
+            if (parseInt(product.stock) < 5) {
+                lowStockCount++;
             }
-        } catch (error) {
-            console.error('Error processing sale date:', error);
+        });
+        const dashLowStock = document.getElementById('dashboardLowStock');
+        if (dashLowStock) {
+            dashLowStock.textContent = lowStockCount;
         }
-    });
 
-    const dashTodaySales = document.getElementById('dashboardTodaySales');
-    if (dashTodaySales) {
-        dashTodaySales.textContent = todaySalesCount;
-    }
+        // We mock sales for now or get from API once sales endpoint exists
+        const storeSales = getLocalData('storeSales', []);
 
-    const dashTotalRevenue = document.getElementById('dashboardTotalRevenue');
-    if (dashTotalRevenue) {
-        dashTotalRevenue.textContent = formatCurrency(todayRevenue);
+        // 3. Today's Sales && 4. Monthly Revenue
+        let todaySalesCount = 0;
+        let monthlyRevenue = 0;
+
+        const today = new Date();
+        const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        storeSales.forEach(sale => {
+            const saleDate = new Date(sale.date);
+            if (saleDate >= startOfToday) {
+                todaySalesCount++;
+            }
+            if (saleDate >= startOfMonth) {
+                monthlyRevenue += parseFloat(sale.total);
+            }
+        });
+
+        const dashTodaySales = document.getElementById('dashboardTodaySales');
+        if (dashTodaySales) {
+            dashTodaySales.textContent = todaySalesCount;
+        }
+
+        const dashMonthlyRevenue = document.getElementById('dashboardMonthlyRevenue');
+        if (dashMonthlyRevenue) {
+            dashMonthlyRevenue.textContent = typeof formatCurrency === 'function' ? formatCurrency(monthlyRevenue) : '$' + monthlyRevenue.toFixed(2);
+        }
+
+        // Populate Recent Activity Table (Products)
+        const recentActivityTable = document.getElementById('recentActivityTable');
+        if (recentActivityTable) {
+            recentActivityTable.innerHTML = '';
+            
+            // Just display up to 5 recently fetched products
+            const recentItems = products.slice(-5).reverse();
+            
+            if (recentItems.length === 0) {
+                recentActivityTable.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>';
+            } else {
+                recentItems.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.id}</td>
+                        <td>${item.name} added to stock</td>
+                        <td><span class="badge badge-success">Inventory</span></td>
+                        <td>Added: ${item.stock} unit(s)</td>
+                    `;
+                    recentActivityTable.appendChild(tr);
+                });
+            }
+        }
+
+    } catch (err) {
+        console.error("Dashboard Load Error", err);
     }
 });

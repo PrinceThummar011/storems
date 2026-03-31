@@ -4,7 +4,7 @@
   "description": "Store Management System - A complete browser-based POS solution with products, billing, and inventory management",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 8000 --directory .",
+    "start": "node server.js",
     "lint": "eslint js/*.js",
     "format": "prettier --write \"js/**/*.js\" \"css/**/*.css\" \"*.html\""
   },
@@ -23,6 +23,12 @@
     "prettier": "^3.0.0"
   },
   "dependencies": {
-    "chart.js": "^4.4.0"
+    "bcrypt": "^6.0.0",
+    "chart.js": "^4.4.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "sqlite3": "^6.0.1"
   }
 }
