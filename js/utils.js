@@ -10,7 +10,7 @@
  */
 function checkAuth() {
     if (localStorage.getItem('isLoggedIn') !== 'true') {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return false;
     }
     return true;
@@ -49,7 +49,7 @@ function initializeLogout() {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('username');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             });
         }
     } catch (error) {

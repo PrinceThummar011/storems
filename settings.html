@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Settings - Backup, restore, and manage StoreMS data">
+    <title>Settings - StoreMS Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- Authentication Check -->
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('storems_loggedin') !== 'true') {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>My Store MS</h2>
+                <button class="mobile-menu-close" id="closeMenuBtn">&times;</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item">Dashboard</a>
+                <a href="products.html" class="nav-item">Products</a>
+                <a href="new-sale.html" class="nav-item">New Sale</a>
+                <a href="stock.html" class="nav-item">Stock</a>
+                <a href="reports.html" class="nav-item">Reports</a>
+                <a href="settings.html" class="nav-item active">Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-btn-full">
+                    🚪 Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="openMenuBtn">&#9776;</button>
+                </div>
+                <div class="header-right">
+                    <span class="welcome-text">Welcome, <span id="displayUsername">Admin</span></span>
+                    <span class="date-text" id="todayDate"></span>
+                </div>
+            </header>
+
+            <!-- Settings Content -->
+            <main class="dashboard-content">
+                <div class="welcome-banner">
+                    <h1>Settings</h1>
+                    <p>Manage your store data and preferences.</p>
+                </div>
+
+                <!-- Data Backup & Restore Section -->
+                <div class="content-card">
+                    <h2 class="card-title">💾 Data Backup & Restore</h2>
+                    
+                    <!-- Status Message -->
+                    <div id="backupMessage" class="backup-message" style="display: none; margin-bottom: 15px; padding: 12px 16px; border-radius: 8px; font-size: 14px; border-left: 4px solid;"></div>
+                    
+                    <!-- Last Backup Info -->
+                    <div id="lastBackupInfo" style="margin-bottom: 20px; padding: 12px 16px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 13px; color: #166534;">
+                        <span>📅 Last backup: </span>
+                        <strong id="lastBackupTime">Never</strong>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                        
+                        <!-- Backup Button -->
+                        <button id="backupBtn" class="btn btn-success" style="padding: 12px 20px; background-color: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            ⬇️ Backup Data
+                        </button>
+                        
+                        <!-- Restore Button -->
+                        <button id="restoreBtn" class="btn btn-primary" style="padding: 12px 20px; background-color: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            ⬆️ Restore Data
+                        </button>
+                        
+                        <!-- Hidden File Input -->
+                        <input type="file" id="restoreFile" accept=".json" style="display: none;">
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 0;">
+                        ℹ️ <strong>Backup includes:</strong> All products, sales records, and settings<br>
+                        ⚠️ <strong>Restore will:</strong> Overwrite all existing data with backup data
+                    </p>
+                </div>
+
+                <!-- Additional Settings Section -->
+                <div class="content-card" style="margin-top: 20px;">
+                    <h2 class="card-title">⚙️ More Settings</h2>
+                    
+                    <div style="padding: 20px; background-color: #f9fafb; border-radius: 8px;">
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #111827;">Account Information</h3>
+                            <p style="font-size: 13px; color: #6b7280; margin-bottom: 10px;">
+                                <strong>Username:</strong> <span id="settingsUsername">admin</span>
+                            </p>
+                            <p style="font-size: 13px; color: #6b7280; margin-bottom: 10px;">
+                                <strong>Login Time:</strong> <span id="settingsLoginTime">Not available</span>
+                            </p>
+                            <p style="font-size: 13px; color: #6b7280;">
+                                <strong>Browser Storage Used:</strong> <span id="settingsStorageUsed">Calculating...</span>
+                            </p>
+                        </div>
+
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #111827;">Danger Zone</h3>
+                            <button id="clearDataBtn" class="btn btn-danger" style="padding: 10px 16px; background-color: #ef4444; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                🗑️ Clear All Data
+                            </button>
+                            <p style="font-size: 12px; color: #991b1b; margin-top: 10px;">
+                                ⚠️ This will permanently delete all data. This cannot be undone.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    
+    <script>
+        /**
+         * Settings Page - Header & Mobile Menu Setup
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup header
+            const username = localStorage.getItem('storems_username');
+            if (username) {
+                document.getElementById('displayUsername').textContent = username.charAt(0).toUpperCase() + username.slice(1);
+                document.getElementById('settingsUsername').textContent = username;
+            }
+
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('todayDate').textContent = today.toLocaleDateString('en-US', options);
+
+            // Setup login time
+            const loginTime = localStorage.getItem('storems_login_time');
+            if (loginTime) {
+                const date = new Date(loginTime);
+                const formatted = date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('settingsLoginTime').textContent = formatted;
+            }
+
+            // Calculate storage used
+            calculateStorageUsed();
+
+            // Mobile menu
+            const sidebar = document.getElementById('sidebar');
+            document.getElementById('openMenuBtn').addEventListener('click', () => {
+                sidebar.classList.add('open');
+            });
+            document.getElementById('closeMenuBtn').addEventListener('click', () => {
+                sidebar.classList.remove('open');
+            });
+        });
+
+        /**
+         * Calculate localStorage usage
+         */
+        function calculateStorageUsed() {
+            try {
+                let total = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        total += localStorage[key].length + key.length;
+                    }
+                }
+                const kb = (total / 1024).toFixed(2);
+                const mb = (total / (1024 * 1024)).toFixed(2);
+                const usage = kb > 1024 ? mb + ' MB' : kb + ' KB';
+                document.getElementById('settingsStorageUsed').textContent = usage;
+            } catch (error) {
+                document.getElementById('settingsStorageUsed').textContent = 'Unable to calculate';
+            }
+        }
+
+        /**
+         * Data Backup & Restore Module
+         */
+        const backupBtn = document.getElementById('backupBtn');
+        const restoreBtn = document.getElementById('restoreBtn');
+        const restoreFile = document.getElementById('restoreFile');
+        const messageBox = document.getElementById('backupMessage');
+        const lastBackupTime = document.getElementById('lastBackupTime');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+
+        // Display last backup time on load
+        displayLastBackupTime();
+
+        /**
+         * Show message to user
+         */
+        function showMessage(message, type = 'success') {
+            try {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+
+                if (type === 'success') {
+                    messageBox.style.borderLeftColor = '#10b981';
+                    messageBox.style.backgroundColor = '#f0fdf4';
+                    messageBox.style.color = '#166534';
+                } else if (type === 'error') {
+                    messageBox.style.borderLeftColor = '#ef4444';
+                    messageBox.style.backgroundColor = '#fef2f2';
+                    messageBox.style.color = '#991b1b';
+                } else {
+                    messageBox.style.borderLeftColor = '#f59e0b';
+                    messageBox.style.backgroundColor = '#fffbeb';
+                    messageBox.style.color = '#92400e';
+                }
+
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 5000);
+            } catch (error) {
+                console.error('Error showing message:', error);
+            }
+        }
+
+        /**
+         * Display last backup time
+         */
+        function displayLastBackupTime() {
+            try {
+                const lastBackup = localStorage.getItem('storems_last_backup');
+                if (lastBackup) {
+                    const date = new Date(lastBackup);
+                    const formatted = date.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    lastBackupTime.textContent = formatted;
+                } else {
+                    lastBackupTime.textContent = 'Never';
+                }
+            } catch (error) {
+                console.error('Error displaying backup time:', error);
+            }
+        }
+
+        /**
+         * Backup all data
+         */
+        backupBtn.addEventListener('click', () => {
+            try {
+                // Collect all data from localStorage
+                const backupData = {
+                    backupDate: new Date().toISOString(),
+                    version: '1.0',
+                    data: {
+                        products: localStorage.getItem('storeProducts'),
+                        sales: localStorage.getItem('storeSales'),
+                        username: localStorage.getItem('storems_username'),
+                    }
+                };
+
+                // Convert to JSON string
+                const jsonString = JSON.stringify(backupData, null, 2);
+
+                // Create blob
+                const blob = new Blob([jsonString], { type: 'application/json' });
+
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `storems-backup-${new Date().toISOString().split('T')[0]}.json`;
+
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                // Save backup timestamp
+                localStorage.setItem('storems_last_backup', new Date().toISOString());
+                displayLastBackupTime();
+
+                showMessage('✅ Backup successful! File downloaded.', 'success');
+
+            } catch (error) {
+                console.error('Backup error:', error);
+                showMessage('❌ Backup failed: ' + error.message, 'error');
+            }
+        });
+
+        /**
+         * Restore data from file
+         */
+        restoreBtn.addEventListener('click', () => {
+            restoreFile.click();
+        });
+
+        /**
+         * Handle file selection for restore
+         */
+        restoreFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            try {
+                // Check file type
+                if (!file.name.endsWith('.json')) {
+                    showMessage('❌ Please select a valid JSON backup file', 'error');
+                    restoreFile.value = '';
+                    return;
+                }
+
+                // Read file
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+                    try {
+                        // Parse JSON
+                        const backupData = JSON.parse(event.target.result);
+
+                        // Validate backup format
+                        if (!backupData.data) {
+                            showMessage('❌ Invalid backup file format', 'error');
+                            return;
+                        }
+
+                        // Confirm restore
+                        if (confirm('⚠️ Restore will overwrite all current data. Are you sure?')) {
+                            // Restore data
+                            if (backupData.data.products) {
+                                localStorage.setItem('storeProducts', backupData.data.products);
+                            }
+                            if (backupData.data.sales) {
+                                localStorage.setItem('storeSales', backupData.data.sales);
+                            }
+                            if (backupData.data.username) {
+                                localStorage.setItem('storems_username', backupData.data.username);
+                            }
+
+                            // Update backup timestamp
+                            localStorage.setItem('storems_last_backup', new Date().toISOString());
+                            displayLastBackupTime();
+
+                            showMessage('✅ Data restored successfully! Reloading page...', 'success');
+
+                            // Reload page after 2 seconds
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
+
+                    } catch (error) {
+                        console.error('Restore parse error:', error);
+                        showMessage('❌ Failed to read backup file', 'error');
+                    }
+                };
+
+                reader.onerror = () => {
+                    showMessage('❌ Error reading file', 'error');
+                };
+
+                reader.readAsText(file);
+
+            } catch (error) {
+                console.error('Restore error:', error);
+                showMessage('❌ Restore failed: ' + error.message, 'error');
+            } finally {
+                restoreFile.value = '';
+            }
+        });
+
+        /**
+         * Clear all data
+         */
+        clearDataBtn.addEventListener('click', () => {
+            if (confirm('⚠️ Are you sure? This will delete ALL data permanently. This CANNOT be undone.')) {
+                if (confirm('Really sure? Type "DELETE" to confirm... Just kidding! Click OK to proceed.')) {
+                    try {
+                        localStorage.removeItem('storeProducts');
+                        localStorage.removeItem('storeSales');
+                        showMessage('✅ All data cleared! Page will reload...', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } catch (error) {
+                        showMessage('❌ Error clearing data', 'error');
+                    }
+                }
+            }
+        });
+
+        /**
+         * Button hover effects
+         */
+        backupBtn.addEventListener('mouseenter', () => {
+            backupBtn.style.backgroundColor = '#059669';
+            backupBtn.style.transform = 'translateY(-2px)';
+            backupBtn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+        });
+
+        backupBtn.addEventListener('mouseleave', () => {
+            backupBtn.style.backgroundColor = '#10b981';
+            backupBtn.style.transform = 'translateY(0)';
+            backupBtn.style.boxShadow = 'none';
+        });
+
+        restoreBtn.addEventListener('mouseenter', () => {
+            restoreBtn.style.backgroundColor = '#2563eb';
+            restoreBtn.style.transform = 'translateY(-2px)';
+            restoreBtn.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.3)';
+        });
+
+        restoreBtn.addEventListener('mouseleave', () => {
+            restoreBtn.style.backgroundColor = '#3b82f6';
+            restoreBtn.style.transform = 'translateY(0)';
+            restoreBtn.style.boxShadow = 'none';
+        });
+
+        clearDataBtn.addEventListener('mouseenter', () => {
+            clearDataBtn.style.backgroundColor = '#dc2626';
+            clearDataBtn.style.transform = 'translateY(-2px)';
+            clearDataBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+        });
+
+        clearDataBtn.addEventListener('mouseleave', () => {
+            clearDataBtn.style.backgroundColor = '#ef4444';
+            clearDataBtn.style.transform = 'translateY(0)';
+            clearDataBtn.style.boxShadow = 'none';
+        });
+    </script>
+
+    <!-- Logout Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to logout?')) {
+                        try {
+                            localStorage.removeItem('storems_loggedin');
+                            localStorage.removeItem('storems_username');
+                            localStorage.removeItem('storems_login_time');
+                            window.location.href = 'login.html';
+                        } catch (error) {
+                            console.error('Logout error:', error);
+                            alert('Error logging out. Please try again.');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

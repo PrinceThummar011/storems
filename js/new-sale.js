@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Check authentication
     if (localStorage.getItem('isLoggedIn') !== 'true') {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
     }
 
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('username');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
     });
 
     const sidebar = document.getElementById('sidebar');
