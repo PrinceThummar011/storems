@@ -1,26 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication
-    if (localStorage.getItem('storems_loggedin') !== 'true') {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Header logic
-    const username = localStorage.getItem('storems_username');
-    if (username) {
-        document.getElementById('displayUsername').textContent = username.charAt(0).toUpperCase() + username.slice(1);
-    }
-    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('username');
-        window.location.href = 'login.html';
-    });
-
-    const sidebar = document.getElementById('sidebar');
-    document.getElementById('openMenuBtn').addEventListener('click', () => sidebar.classList.add('open'));
-    document.getElementById('closeMenuBtn').addEventListener('click', () => sidebar.classList.remove('open'));
+    // Common auth/header/sidebar handling
+    if (typeof initializeApp === 'function') initializeApp();
 
     // REPORTS LOGIC
     let storeSales = [];
@@ -28,7 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadSales() {
         try {
-            const res = await fetch('/api/sales', { headers: { 'Authorization': 'Bearer ' + token } });
+            const res = await fetch('/api/sales/history', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('storems_loggedin');
+                localStorage.removeItem('storems_token');
+                localStorage.removeItem('storems_username');
+                window.location.href = 'login.html';
+                return;
+            }
             if (res.ok) {
                 storeSales = await res.json();
             } else {
@@ -42,30 +29,62 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const salesTableBody = document.querySelector('#salesTable tbody');
     const emptyState = document.getElementById('emptyState');
-    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const historyDateFilter = document.getElementById('historyDateFilter');
+    const showTodayBtn = document.getElementById('showTodayBtn');
+    const summaryDateLabel = document.getElementById('summaryDateLabel');
+    const summaryRevenueDateLabel = document.getElementById('summaryRevenueDateLabel');
+
+    function toLocalDateInputValue(dateObj) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function getSelectedDateValue() {
+        if (!historyDateFilter || !historyDateFilter.value) {
+            return toLocalDateInputValue(new Date());
+        }
+        return historyDateFilter.value;
+    }
+
+    function getFilteredSales() {
+        const selectedDate = getSelectedDateValue();
+        return (storeSales || []).filter((sale) => {
+            const saleDate = new Date(sale.created_at);
+            return toLocalDateInputValue(saleDate) === selectedDate;
+        });
+    }
+
+    function updateSummaryLabels() {
+        const selectedDate = getSelectedDateValue();
+        const today = toLocalDateInputValue(new Date());
+        const label = selectedDate === today ? 'Today' : selectedDate;
+        if (summaryDateLabel) summaryDateLabel.textContent = label;
+        if (summaryRevenueDateLabel) summaryRevenueDateLabel.textContent = label;
+    }
     
     // Top summary computations
     function computeSummary() {
+        const filteredSales = getFilteredSales();
         let todaySalesCount = 0;
         let todayRevenue = 0;
-        
-        const todayStr = new Date().toDateString();
-        
-        storeSales.forEach(sale => {
-            const saleDate = new Date(sale.created_at);
-            if (saleDate.toDateString() === todayStr) {
-                todaySalesCount++;
-                todayRevenue += parseFloat(sale.total || 0);
-            }
+
+        filteredSales.forEach(sale => {
+            todaySalesCount++;
+            todayRevenue += parseFloat(sale.total || 0);
         });
 
         document.getElementById('todaySalesCount').textContent = todaySalesCount;
         document.getElementById('todayRevenue').textContent = '₹' + todayRevenue.toFixed(2);
+        updateSummaryLabels();
     }
 
     function renderTable() {
         salesTableBody.innerHTML = '';
-        if (storeSales.length === 0) {
+        const filteredSales = getFilteredSales();
+
+        if (filteredSales.length === 0) {
             emptyState.style.display = 'block';
             document.getElementById('salesTable').style.display = 'none';
         } else {
@@ -73,18 +92,47 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('salesTable').style.display = 'table';
             
             // Render from newest to oldest
-            const sortedSales = [...storeSales].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            const sortedSales = [...filteredSales].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
             
             sortedSales.forEach(sale => {
                 const saleDate = new Date(sale.created_at);
+                const hourSlot = saleDate.toLocaleTimeString([], { hour: '2-digit' });
+                const itemDetails = Array.isArray(sale.items) ? sale.items : [];
+                const productsText = itemDetails.length
+                    ? itemDetails.map(item => `${item.product_name} x ${item.quantity}`).join(', ')
+                    : 'No item details';
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: 500;">INV-${sale.id}</td>
-                    <td>${saleDate.toLocaleDateString()}</td>
-                    <td>${saleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                    <td>${sale.total_items || 0}</td>
-                    <td style="font-weight: 600;">₹${parseFloat(sale.total || 0).toFixed(2)}</td>
-                `;
+
+                const billTd = document.createElement('td');
+                billTd.style.fontWeight = '500';
+                billTd.textContent = `INV-${sale.id}`;
+
+                const dateTd = document.createElement('td');
+                dateTd.textContent = saleDate.toLocaleDateString();
+
+                const timeTd = document.createElement('td');
+                timeTd.textContent = saleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const hourTd = document.createElement('td');
+                hourTd.textContent = hourSlot;
+
+                const productsTd = document.createElement('td');
+                productsTd.textContent = productsText;
+
+                const qtyTd = document.createElement('td');
+                qtyTd.textContent = sale.total_quantity || 0;
+
+                const totalTd = document.createElement('td');
+                totalTd.style.fontWeight = '600';
+                totalTd.textContent = `₹${parseFloat(sale.total || 0).toFixed(2)}`;
+
+                tr.appendChild(billTd);
+                tr.appendChild(dateTd);
+                tr.appendChild(timeTd);
+                tr.appendChild(hourTd);
+                tr.appendChild(productsTd);
+                tr.appendChild(qtyTd);
+                tr.appendChild(totalTd);
                 salesTableBody.appendChild(tr);
             });
         }
@@ -153,14 +201,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadSales().then(() => {
+        if (historyDateFilter && !historyDateFilter.value) {
+            historyDateFilter.value = toLocalDateInputValue(new Date());
+        }
         computeSummary();
         renderTable();
         renderChart();
     });
 
-    // Clear history
-    clearHistoryBtn.addEventListener('click', () => {
-        alert('Sales history is stored securely on the server and cannot be cleared from here.');
-    });
+    if (historyDateFilter) {
+        historyDateFilter.addEventListener('change', () => {
+            computeSummary();
+            renderTable();
+        });
+    }
+
+    if (showTodayBtn) {
+        showTodayBtn.addEventListener('click', () => {
+            if (historyDateFilter) {
+                historyDateFilter.value = toLocalDateInputValue(new Date());
+            }
+            computeSummary();
+            renderTable();
+        });
+    }
 
 });

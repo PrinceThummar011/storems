@@ -285,6 +285,64 @@ app.get('/api/sales', authenticateToken, (req, res) => {
     });
 });
 
+// Fetch detailed sales history with product-wise quantities for tenant
+app.get('/api/sales/history', authenticateToken, (req, res) => {
+    const salesQuery = `
+        SELECT s.id, s.total, s.created_at
+        FROM sales s
+        WHERE s.tenant_id = ?
+        ORDER BY s.created_at DESC
+    `;
+
+    const itemsQuery = `
+        SELECT
+            si.sale_id,
+            si.product_id,
+            si.quantity,
+            si.price,
+            si.line_total,
+            COALESCE(p.name, 'Deleted Product') AS product_name
+        FROM sale_items si
+        INNER JOIN sales s ON s.id = si.sale_id
+        LEFT JOIN products p ON p.id = si.product_id AND p.tenant_id = s.tenant_id
+        WHERE s.tenant_id = ?
+        ORDER BY si.id ASC
+    `;
+
+    db.all(salesQuery, [req.user.tenant_id], (salesErr, salesRows) => {
+        if (salesErr) return res.status(500).json({ error: 'Failed to fetch sales history.' });
+
+        db.all(itemsQuery, [req.user.tenant_id], (itemsErr, itemRows) => {
+            if (itemsErr) return res.status(500).json({ error: 'Failed to fetch sale item details.' });
+
+            const itemsBySaleId = {};
+            (itemRows || []).forEach((item) => {
+                if (!itemsBySaleId[item.sale_id]) itemsBySaleId[item.sale_id] = [];
+                itemsBySaleId[item.sale_id].push({
+                    product_id: item.product_id,
+                    product_name: item.product_name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    line_total: item.line_total
+                });
+            });
+
+            const detailed = (salesRows || []).map((sale) => {
+                const items = itemsBySaleId[sale.id] || [];
+                const totalQuantity = items.reduce((sum, i) => sum + (parseInt(i.quantity, 10) || 0), 0);
+                return {
+                    ...sale,
+                    items,
+                    total_items: items.length,
+                    total_quantity: totalQuantity
+                };
+            });
+
+            res.json(detailed);
+        });
+    });
+});
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`SaaS Backend running directly at http://localhost:${PORT}`);

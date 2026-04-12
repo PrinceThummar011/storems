@@ -54,11 +54,11 @@
                 <!-- Summary Section -->
                 <div class="stats-grid mb-20">
                     <div class="stat-card">
-                        <span class="stat-title">Total Sales Today</span>
+                        <span class="stat-title">Sales Count (<span id="summaryDateLabel">Today</span>)</span>
                         <span class="stat-value" id="todaySalesCount">0</span>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-title">Total Revenue Today</span>
+                        <span class="stat-title">Revenue (<span id="summaryRevenueDateLabel">Today</span>)</span>
                         <span class="stat-value text-blue" id="todayRevenue">&#8377;0.00</span>
                     </div>
                 </div>
@@ -74,7 +74,11 @@
                 <div class="content-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
                         <h2 class="card-title" style="border: none; margin: 0; padding: 0;">Sales History</h2>
-                        <button id="clearHistoryBtn" class="btn btn-danger btn-sm">Clear History</button>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <label for="historyDateFilter" style="font-weight: 600; color: var(--text-muted);">Select Date:</label>
+                            <input type="date" id="historyDateFilter" class="form-control" style="padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <button id="showTodayBtn" class="btn btn-secondary btn-sm">Today</button>
+                        </div>
                     </div>
                     
                     <div class="table-responsive">
@@ -84,7 +88,9 @@
                                     <th>Bill Number</th>
                                     <th>Date</th>
                                     <th>Time</th>
-                                    <th>Number of Items</th>
+                                    <th>Hour Slot</th>
+                                    <th>Products (Qty)</th>
+                                    <th>Total Qty</th>
                                     <th>Total Amount</th>
                                 </tr>
                             </thead>
@@ -94,7 +100,7 @@
                         </table>
                     </div>
                     <div id="emptyState" class="empty-state" style="display: none;">
-                        <p>No sales history found. Go to 'New Sale' to generate an invoice!</p>
+                        <p>No sales found for selected date.</p>
                     </div>
                 </div>
             </main>
