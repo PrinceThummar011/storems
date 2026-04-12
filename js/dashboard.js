@@ -9,10 +9,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const token = localStorage.getItem('storems_token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
         
         // Fetch products
         let products = [];
         const prodRes = await fetch('/api/products', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (prodRes.status === 401 || prodRes.status === 403) {
+            localStorage.removeItem('storems_loggedin');
+            localStorage.removeItem('storems_token');
+            localStorage.removeItem('storems_username');
+            window.location.href = 'login.html';
+            return;
+        }
         if(prodRes.ok) products = await prodRes.json();
 
         // 1. Total Products
@@ -38,9 +49,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const salesRes = await fetch('/api/sales', { headers: { 'Authorization': 'Bearer ' + token } });
         if (salesRes.ok) sales = await salesRes.json();
 
-        // 3. Today's Sales && 4. Monthly Revenue
+        // 3. Today's Sales && 4. Total Revenue
         let todaySalesCount = 0;
-        let monthlyRevenue = 0;
+        let totalRevenue = 0;
 
         const today = new Date();
         const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -52,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 todaySalesCount += 1;
             }
             if (saleDate >= startOfMonth) {
-                monthlyRevenue += parseFloat(sale.total || 0);
+                totalRevenue += parseFloat(sale.total || 0);
             }
         });
 
@@ -61,9 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             dashTodaySales.textContent = todaySalesCount;
         }
 
-        const dashMonthlyRevenue = document.getElementById('dashboardMonthlyRevenue');
-        if (dashMonthlyRevenue) {
-            dashMonthlyRevenue.textContent = typeof formatCurrency === 'function' ? formatCurrency(monthlyRevenue) : '₹' + monthlyRevenue.toFixed(2);
+        const dashTotalRevenue = document.getElementById('dashboardTotalRevenue');
+        if (dashTotalRevenue) {
+            dashTotalRevenue.textContent = typeof formatCurrency === 'function' ? formatCurrency(totalRevenue) : '₹' + totalRevenue.toFixed(2);
         }
 
         // Populate Recent Activity Table (Products)

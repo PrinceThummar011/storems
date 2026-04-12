@@ -7,9 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageBox = document.getElementById('loginMessage');
 
     function checkExistingLogin() {
-        const token = localStorage.getItem('storems_loggedin');
-        if (token === 'true') {
+        const isLoggedIn = localStorage.getItem('storems_loggedin') === 'true';
+        const token = localStorage.getItem('storems_token');
+        if (isLoggedIn && token) {
             window.location.href = 'index.html';
+        } else if (isLoggedIn && !token) {
+            // Reset stale local state
+            localStorage.removeItem('storems_loggedin');
+            localStorage.removeItem('storems_username');
         }
     }
 

@@ -9,7 +9,14 @@
  * @returns {boolean} true if authenticated, false otherwise
  */
 function checkAuth() {
-    if (localStorage.getItem('storems_loggedin') !== 'true') {
+    const isLoggedIn = localStorage.getItem('storems_loggedin') === 'true';
+    const token = localStorage.getItem('storems_token');
+
+    if (!isLoggedIn || !token) {
+        // Clear stale auth flags so login flow can recover cleanly
+        localStorage.removeItem('storems_loggedin');
+        localStorage.removeItem('storems_token');
+        localStorage.removeItem('storems_username');
         window.location.href = 'login.html';
         return false;
     }
